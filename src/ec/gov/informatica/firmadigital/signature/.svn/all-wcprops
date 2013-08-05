@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/signature
+END
+SunPKCS7SignatureProcessor.java
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/firmaelectronica/!svn/ver/74/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/signature/SunPKCS7SignatureProcessor.java
+END
+SignatureVerificationException.java
+K 25
+svn:wc:ra_dav:version-url
+V 143
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/signature/SignatureVerificationException.java
+END
+CMSSignatureProcessor.java
+K 25
+svn:wc:ra_dav:version-url
+V 134
+/firmaelectronica/!svn/ver/74/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/signature/CMSSignatureProcessor.java
+END
+JDKSignatureProcessor.java
+K 25
+svn:wc:ra_dav:version-url
+V 134
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/signature/JDKSignatureProcessor.java
+END
+RawSignatureProcessor.java
+K 25
+svn:wc:ra_dav:version-url
+V 134
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/signature/RawSignatureProcessor.java
+END
+BouncyCastleSignatureProcessor.java
+K 25
+svn:wc:ra_dav:version-url
+V 143
+/firmaelectronica/!svn/ver/74/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/signature/BouncyCastleSignatureProcessor.java
+END

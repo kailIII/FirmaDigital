@@ -1,0 +1,370 @@
+/*
+ * Copyright (C) 2009 Libreria para Firma Digital development team.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ */
+package ec.gov.informatica.firmadigital.applet;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.Logger;
+
+import javax.swing.JApplet;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
+import ec.gov.informatica.firmadigital.FirmaDigital;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JRadioButton;
+import javax.swing.plaf.basic.BasicBorders.ButtonBorder;
+
+/**
+ * Applet sencillo para probar la funcionalidad de firmado electronico.
+ * Se anadio funcionalidad para firmado con archivo, con token aladdin y sData
+ * @author Jorge Ruales <jorge.ruales@presidencia.gob.ec>
+ * @version 3.0 $
+ */
+public class AppletFirmaDigital extends JApplet {
+
+    private static final long serialVersionUID = -6721434772432590373L;
+    private static final Logger logger = Logger.getLogger(AppletFirmaDigital.class.getName());
+    private JButton botonBuscarArchivoFirmar = new JButton();
+    private JButton botonBuscarArchivoCertificado = new JButton();
+    private JButton botonFirmar = new JButton();
+    private JButton botonVerificar = new JButton();
+    private JLabel lblIngresarClave = new JLabel();
+    private JPanel panelFondo = new JPanel();
+    private JPanel panelTitulo = new JPanel();
+    private JLabel lblDispositivo = new JLabel();
+    private JLabel lblTitulo = new JLabel();
+    private JLabel lblDerechos = new JLabel();
+    private JLabel lblArchivoCert = new JLabel();
+    private JLabel lblArchivoFirmar = new JLabel();
+    private JLabel lblMensajes = new JLabel();
+    private JRadioButton isTokenIkey = null;
+    private JRadioButton isTokenAlladin = null;
+    private JRadioButton isTokenSD = null;
+    private JRadioButton isCertificado = null;
+    private ButtonGroup grupo_tipos = new ButtonGroup();
+    private String tipo_certificado = "1";  // 1 Token , 2 Archivo --> por defecto va token
+    private JTextField txtRutaArchivoFirmar = new JTextField();
+    private JTextField txtRutaArchivoCertificado = new JTextField();  // text donde estara el url del certificado
+    private JTextField txtPassword = new JPasswordField();
+    FirmaDigital firmaDigital = new FirmaDigital();
+
+    @Override
+    public void init() {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                public void run() {
+                    crearGUI();
+                }
+            });
+        } catch (Exception e) {
+            System.err.println("Error en el metodo init()");
+        }
+    }
+
+    /**
+     *Crea el entorno grafico del applet
+     */
+    private void crearGUI() {
+        // asigna el tamaño inicial
+        resize(600, 400);
+        // panel donde se añadiran los elementos
+        panelFondo.setBackground(Color.WHITE);
+        panelFondo.setLayout(null);
+        panelFondo.setBounds(0, 0, 600, 400);
+        panelFondo.setBorder(new ButtonBorder(new Color(100, 150, 205), new Color(100, 150, 205), new Color(100, 150, 205), new Color(100, 150, 205)));
+        //titulo
+        panelTitulo.setBackground(new Color(100, 150, 205));
+        panelTitulo.setLayout(null);
+        panelTitulo.setBounds(0, 0, 600, 60);
+        lblTitulo.setFont(new Font("DialogInput", 0, 20));
+        lblTitulo.setForeground(new Color(0, 50, 100));
+        lblTitulo.setText("Firma electrónica de archivos");
+        lblTitulo.setBounds(30, 0, 450, 30);
+        lblDerechos.setFont(new Font("DialogInput", 0, 10));
+        lblDerechos.setForeground(new Color(50, 50, 50));
+        lblDerechos.setText("Subsecretaría de Tecnologías de Información, 2008-2012, Licencia GPL");
+        lblDerechos.setBounds(170, 45, 450, 12);
+        panelTitulo.add(lblDerechos);
+        panelTitulo.add(lblTitulo);
+        panelFondo.add(panelTitulo);
+        // mensajes
+        lblMensajes.setFont(new Font("DialogInput", 0, 12));
+        lblMensajes.setForeground(new Color(0, 50, 100));
+        lblMensajes.setBounds(30, 200, 450, 190);
+        panelFondo.add(lblMensajes);
+
+        // radiobutons de ubicacion certificado
+        lblDispositivo.setBounds(30, 70, 120, 20);
+        lblDispositivo.setBackground(Color.WHITE);
+        lblDispositivo.setText("Tipo Certificado:");
+        panelFondo.add(lblDispositivo);
+        isTokenIkey = new JRadioButton("iKey 2032", true);
+        isTokenIkey.setBackground(Color.WHITE);
+        isTokenIkey.setBounds(170, 70, 100, 20);
+        isTokenAlladin = new JRadioButton("eTokenPro", true);
+        isTokenAlladin.setBackground(Color.WHITE);
+        isTokenAlladin.setBounds(270, 70, 110, 20);
+        isTokenSD = new JRadioButton("Security Data", true);
+        isTokenSD.setBackground(Color.WHITE);
+        isTokenSD.setBounds(380, 70, 130, 20);
+        isCertificado = new JRadioButton("Archivo", false);
+        isCertificado.setBackground(Color.WHITE);
+        isCertificado.setBounds(510, 70, 85, 20);
+        grupo_tipos.add(isTokenIkey);
+        grupo_tipos.add(isTokenAlladin);
+        grupo_tipos.add(isTokenSD);
+        grupo_tipos.add(isCertificado);
+        panelFondo.add(isTokenIkey);
+        panelFondo.add(isTokenSD);
+        panelFondo.add(isTokenAlladin);
+        panelFondo.add(isCertificado);
+        // action de los radiobutton
+        isTokenIkey.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent arg0) {
+                verComponentesCertificado(false);  // desactiva los componentes de certificado
+                tipo_certificado = "1";
+            }
+        });
+        isTokenAlladin.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent arg0) {
+                verComponentesCertificado(false);  // desactiva los componentes de certificado
+                tipo_certificado = "2";
+            }
+        });
+        isTokenSD.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent arg0) {
+                verComponentesCertificado(false);  // desactiva los componentes de certificado
+                tipo_certificado = "3";
+            }
+        });
+        isCertificado.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent arg0) {
+                verComponentesCertificado(true);
+                tipo_certificado = "4";
+            }
+        });
+
+        // laber de seleccionar archivo
+        lblArchivoFirmar.setBounds(30, 150, 140, 20);
+        lblArchivoFirmar.setText("Archivo:");
+        panelFondo.add(lblArchivoFirmar);
+        // ruta del archivo a firmar
+        txtRutaArchivoFirmar.setBounds(170, 150, 300, 20);
+        txtRutaArchivoFirmar.setEditable(false);
+        panelFondo.add(txtRutaArchivoFirmar);
+        // boton que buscara el archivo
+        botonBuscarArchivoFirmar.setBounds(480, 150, 100, 20);
+        botonBuscarArchivoFirmar.setText("Examinar");
+        botonBuscarArchivoFirmar.setBackground(Color.WHITE);
+        botonBuscarArchivoFirmar.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                buscarArchivoFirmar();
+            }
+        });
+        panelFondo.add(botonBuscarArchivoFirmar);
+
+        //Label clave
+        lblIngresarClave.setText("Clave certificado:");
+        lblIngresarClave.setBounds(30, 180, 200, 20);
+        panelFondo.add(lblIngresarClave);
+
+        // textfield clave
+        txtPassword.setBounds(170, 180, 190, 20);
+        panelFondo.add(txtPassword);
+
+        // boton firmar
+        botonFirmar.setText("Firmar");
+        botonFirmar.setBackground(Color.WHITE);
+        botonFirmar.setBounds(370, 180, 100, 20);
+        panelFondo.add(botonFirmar);
+        botonFirmar.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                firmarArchivo();
+            }
+        });
+
+        //boton verificar
+        botonVerificar.setText("Verificar");
+        botonVerificar.setBackground(Color.WHITE);
+        botonVerificar.setBounds(480, 180, 100, 20);
+        panelFondo.add(botonVerificar);
+        botonVerificar.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                verificarArchivo();
+            }
+        });
+
+        add(panelFondo);
+    }
+
+    private void buscarArchivoFirmar() {
+        JFileChooser fileChooser = new JFileChooser();
+        String signFileName = txtRutaArchivoFirmar.getText();
+        File directory = new File(signFileName).getParentFile();
+        fileChooser.setCurrentDirectory(directory);
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            String selectedFile = fileChooser.getSelectedFile().getAbsolutePath();
+            txtRutaArchivoFirmar.setText(selectedFile);
+        }
+    }
+
+    private void firmarArchivo() {
+        try {
+            String name = txtRutaArchivoFirmar.getText();
+            File file = new File(name);
+            byte[] data = getBytesFromFile(file);
+            byte[] firmado = firmaDigital.firmar(data, txtPassword.getText(), tipo_certificado, txtRutaArchivoCertificado.getText());
+            if (firmado.length>0) {
+                writeToFile(name + ".p7m", firmado);
+                mostrar_mensaje("F");
+                 System.out.println("== > El applet completo exitosamente la firma, se genero el archivo: " + name + ".p7m");
+            } 
+        } catch (Exception e) {
+                mostrar_mensaje("E");
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void verificarArchivo() {
+        try {
+            String name = txtRutaArchivoFirmar.getText();
+            File file = new File(name);
+            byte[] data = getBytesFromFile(file);
+            byte[] verificado = firmaDigital.verificar(data);
+            if (verificado.length > 0) {
+            writeToFile(name.replace(".p7m", ""), verificado);
+                mostrar_mensaje("V");
+                 System.out.println("== > El applet completo exitosamente la verificacion, se genero el archivo: " + name.replace(".p7m", ""));
+            } 
+            
+        } catch (Exception e) {
+                mostrar_mensaje("E");
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private byte[] getBytesFromFile(File file) throws IOException {
+        InputStream is = new FileInputStream(file);
+        long length = file.length();
+        byte[] bytes = new byte[(int) length];
+        int offset = 0;
+        int numRead = 0;
+        while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+            offset += numRead;
+        }
+        if (offset < bytes.length) {
+            throw new IOException("Could not completely read file " + file.getName());
+        }
+        is.close();
+        return bytes;
+    }
+
+    private void writeToFile(String name, byte[] data) throws Exception {
+        File someFile = new File(name);
+        FileOutputStream fos = new FileOutputStream(someFile);
+        fos.write(data);
+        fos.flush();
+        fos.close();
+    }
+
+    private void buscarCertificado() {
+        JFileChooser fileChooser = new JFileChooser();
+        String signFileName = txtRutaArchivoCertificado.getText();
+        File directory = new File(signFileName).getParentFile();
+        fileChooser.setCurrentDirectory(directory);
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            String selectedCertFile = fileChooser.getSelectedFile().getAbsolutePath();
+            txtRutaArchivoCertificado.setText(selectedCertFile);
+        }
+    }
+
+    /**
+     * muestra un mensaje de ejecucion corecta de firma o verificacion
+     */
+    public void mostrar_mensaje(String tipo) {
+        String mensaje = "<html>";
+        if (tipo.equals("E")) {
+            mensaje+="<b>Existio errores en la operación, verifique la consola de java</b>";
+        }
+        if (tipo.equals("F")) { // firma correctamente
+            mensaje += "Firma Electronica Realizada con exito:<br/>" +
+                    "Archivo original: " + txtRutaArchivoFirmar.getText() + "<br/>" +
+                    "Archivo firmado: " + txtRutaArchivoFirmar.getText() + ".p7m<br/><br/>" +
+                    "Firmante:<br/>" +
+                    "Nombre: "+firmaDigital.getDatosUsuarioActual().getNombre()+" "+firmaDigital.getDatosUsuarioActual().getApellido()+"<br/>" +
+                    "Cedula: "+firmaDigital.getDatosUsuarioActual().getCedula()+"<br/>" +
+                    "Institucion: "+firmaDigital.getDatosUsuarioActual().getInstitucion()+"<br/>" +
+                    "Cargo: "+firmaDigital.getDatosUsuarioActual().getCargo();
+        }
+        if (tipo.equals("V")) { // firma correctamente
+            mensaje += "Verificación realizada con exito:<br/>" +
+                    "Archivo original: " + txtRutaArchivoFirmar.getText() + "<br/>" +
+                    "Archivo firmado: " + txtRutaArchivoFirmar.getText().replace(".p7m", "") + "<br/><br/>"+
+                    "Firmante:<br/>" +
+                    "Nombre: "+firmaDigital.getDatosUsuarioActual().getNombre()+" "+firmaDigital.getDatosUsuarioActual().getApellido()+"<br/>" +
+                    "Cedula: "+firmaDigital.getDatosUsuarioActual().getCedula()+"<br/>" +
+                    "Institucion: "+firmaDigital.getDatosUsuarioActual().getInstitucion()+"<br/>" +
+                    "Cargo: "+firmaDigital.getDatosUsuarioActual().getCargo();
+        }
+        mensaje += "</html>";
+        lblMensajes.setText(mensaje);
+        panelFondo.repaint();
+
+    }
+
+    /**
+     * en base a el radiobutton seleccionado activa o no la visibilidad de estos componentes
+     */
+    public void verComponentesCertificado(boolean estado) { //instancia y muestra u oculta los elementos de seleccion del certificado
+        lblArchivoCert.setBounds(30, 120, 140, 20);
+        lblArchivoCert.setText("Archivo certificado:");
+        lblArchivoCert.setVisible(estado);
+        panelFondo.add(lblArchivoCert);
+        txtRutaArchivoCertificado.setBounds(170, 120, 300, 20);
+        txtRutaArchivoCertificado.setVisible(estado);
+        txtRutaArchivoCertificado.setEditable(false);
+        panelFondo.add(txtRutaArchivoCertificado);
+
+        botonBuscarArchivoCertificado.setBounds(480, 120, 100, 20);
+        botonBuscarArchivoCertificado.setText("Examinar");
+        botonBuscarArchivoCertificado.setBackground(Color.WHITE);
+        botonBuscarArchivoCertificado.setVisible(estado);
+        botonBuscarArchivoCertificado.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                buscarCertificado();
+            }
+        });
+        panelFondo.add(botonBuscarArchivoCertificado);
+        panelFondo.repaint();
+    }
+}

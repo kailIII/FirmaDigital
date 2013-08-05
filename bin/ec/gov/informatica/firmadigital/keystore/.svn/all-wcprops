@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore
+END
+WindowsJDK5KeyStoreProvider_SD.java
+K 25
+svn:wc:ra_dav:version-url
+V 142
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/WindowsJDK5KeyStoreProvider_SD.java
+END
+FileKeyStoreProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/FileKeyStoreProvider.java
+END
+KeyStoreProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/KeyStoreProvider.java
+END
+LinuxKeyStoreProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 133
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/LinuxKeyStoreProvider.java
+END
+AppleKeyStoreProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 133
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/AppleKeyStoreProvider.java
+END
+PKCS11KeyStoreProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 134
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/PKCS11KeyStoreProvider.java
+END
+SimpleCallbackHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 133
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/SimpleCallbackHandler.java
+END
+KeyStoreProviderFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 135
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/KeyStoreProviderFactory.java
+END
+WindowsJDK5KeyStoreProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/WindowsJDK5KeyStoreProvider.java
+END
+MockKeyStoreProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/MockKeyStoreProvider.java
+END
+WindowsJDK5KeyStoreProvider_iKey.java
+K 25
+svn:wc:ra_dav:version-url
+V 144
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/WindowsJDK5KeyStoreProvider_iKey.java
+END
+WindowsJDK6KeyStoreProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/WindowsJDK6KeyStoreProvider.java
+END
+WindowsKeyStoreProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 135
+/firmaelectronica/!svn/ver/73/FirmaLiberado/proyFirmaLiberado/src/ec/gov/informatica/firmadigital/keystore/WindowsKeyStoreProvider.java
+END

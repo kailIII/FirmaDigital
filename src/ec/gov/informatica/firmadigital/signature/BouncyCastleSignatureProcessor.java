@@ -1,0 +1,311 @@
+/*
+ * Copyright (C) 2009 Libreria para Firma Digital development team.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ */
+package ec.gov.informatica.firmadigital.signature;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.Signature;
+import java.security.cert.CertStore;
+import java.security.cert.Certificate;
+import java.security.cert.CollectionCertStoreParameters;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessable;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.x509.NoSuchStoreException;
+import org.bouncycastle.x509.X509Store;
+
+import ec.gov.informatica.firmadigital.DatosUsuario;
+
+/**
+ * Implementacion de SignatureProcessor que utliza BouncyCastle para implementar
+ * firma en formato CMS.
+ * 
+ * @author Ricardo Arguello <ricardo.arguello@soportelibre.com>
+ * @version $Revision: 15 $
+ */
+public class BouncyCastleSignatureProcessor implements CMSSignatureProcessor {
+
+    private KeyStore keyStore;
+    private X509Certificate cert;
+
+    public X509Certificate getCert() {
+        return cert;
+    }
+
+    public void setCert(X509Certificate cert) {
+        this.cert = cert;
+    }
+
+
+    public BouncyCastleSignatureProcessor(KeyStore keyStore) {
+        this.keyStore = keyStore;
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
+    public byte[] sign(byte[] data, PrivateKey privateKey, Certificate[] chain) {
+        X509Certificate cert = (X509Certificate) chain[0];
+        try {
+            CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
+            generator.addSigner(privateKey, cert, CMSSignedDataGenerator.DIGEST_SHA1);
+
+            CertStore certsAndCRLS = CertStore.getInstance("Collection", new CollectionCertStoreParameters(Arrays.asList(chain)));
+            generator.addCertificatesAndCRLs(certsAndCRLS);
+
+            CMSProcessable content = new CMSProcessableByteArray(data);
+            CMSSignedData signedData = generator.generate(content, true, keyStore.getProvider().getName());
+
+            return signedData.getEncoded();
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e); // FIXME
+
+        } catch (CMSException e) {
+            throw new RuntimeException(e); // FIXME
+
+        } catch (IOException e) {
+            throw new RuntimeException(e); // FIXME
+
+        }
+    }
+
+    public byte[] verify(byte[] signedBytes) throws SignatureVerificationException {
+        try {
+            Signature sig = Signature.getInstance("Sha1withRSAEncryption");
+            CMSSignedData signedData = new CMSSignedData(signedBytes);
+            CertStore certs = signedData.getCertificatesAndCRLs("Collection", "BC");
+            Collection<SignerInformation> signers = signedData.getSignerInfos().getSigners();
+            for (SignerInformation signer : signers) {
+                Collection<? extends Certificate> certCollection = certs.getCertificates(signer.getSID());
+                if (!certCollection.isEmpty()) {
+                    X509Certificate cert = (X509Certificate) certCollection.iterator().next();
+                    if (!signer.verify(cert.getPublicKey(), "BC")) {
+                        throw new SignatureVerificationException("La firma no verifico con " + signer.getSID());
+                    }
+                    setCert(cert);
+                }
+            }
+
+            CMSProcessable signedContent = signedData.getSignedContent();
+            System.out.println("Tiene:" + signedContent.getContent() );
+            return (byte[]) signedContent.getContent();
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e); // FIXME
+
+        } catch (CMSException e) {
+            throw new RuntimeException(e); // FIXME
+
+        }
+    }
+
+    @Override
+    public byte[] addSignature(byte[] signedBytes, PrivateKey privateKey, Certificate[] chain) {
+        X509Certificate cert = (X509Certificate) chain[0];
+
+        try {
+            CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
+            generator.addSigner(privateKey, cert, CMSSignedDataGenerator.DIGEST_SHA1);
+
+            CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(Arrays.asList(chain)));
+
+            CMSSignedData signedData = new CMSSignedData(signedBytes);
+            SignerInformationStore signers = signedData.getSignerInfos();
+            CertStore existingCerts = signedData.getCertificatesAndCRLs("Collection", "BC");
+            X509Store x509Store = signedData.getAttributeCertificates("Collection", "BC");
+
+            // add new certs
+            generator.addCertificatesAndCRLs(certs);
+            // add existing certs
+            generator.addCertificatesAndCRLs(existingCerts);
+            // add existing certs attributes
+            generator.addAttributeCertificates(x509Store);
+            // add existing signers
+            generator.addSigners(signers);
+
+            CMSProcessable content = signedData.getSignedContent();
+            signedData = generator.generate(content, true, "BC");
+            return signedData.getEncoded();
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        } catch (CMSException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchStoreException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+         *  <code> crearDatosUsuario </code>
+         * @param signingCert
+         * @return
+         * Esta funcion llena los datos del usuario encontrados en el certificado
+         */
+        private DatosUsuario crearDatosUsuario(X509Certificate signingCert) {
+    //        depuracionActual.info("Libreria: Esta en crearDatosUsuario : ");
+            DatosUsuario datosUsuario = new DatosUsuario();
+            if (  signingCert.getExtensionValue("1.2.3.4.1") != null   )
+            {
+                datosUsuario.setCedula(new String(signingCert.getExtensionValue("1.2.3.4.1")).trim());
+            }
+            if (  signingCert.getExtensionValue("1.2.3.4.2") != null   )
+            {
+                datosUsuario.setNombre(new String(signingCert.getExtensionValue("1.2.3.4.2")).trim());
+            }
+            if (  signingCert.getExtensionValue("1.2.3.4.3") != null   )
+            {
+                String txtNombre = new String(signingCert.getExtensionValue("1.2.3.4.3")).trim();
+                if (  signingCert.getExtensionValue("1.2.3.4.4") != null   ) 
+                    txtNombre = txtNombre + " " + new String(signingCert.getExtensionValue("1.2.3.4.4")).trim();
+                datosUsuario.setApellido(txtNombre);
+            }
+            if (  signingCert.getExtensionValue("1.2.3.4.6") != null   )
+            {
+                datosUsuario.setInstitucion(new String(signingCert.getExtensionValue("1.2.3.4.6")).trim());
+            }
+            if (  signingCert.getExtensionValue("1.2.3.4.5") != null   )
+            {
+               datosUsuario.setCargo(new String(signingCert.getExtensionValue("1.2.3.4.5")).trim());
+            }
+            
+             if (  signingCert.getSerialNumber() != null   )
+            {
+                datosUsuario.setSerial(signingCert.getSerialNumber().toString());
+            }
+            
+              if (  signingCert.getExtensionValue("2.5.29.31") != null  )
+            {
+                  
+                  //Estas declaraciones buscan un atributo del Certificado (lista CRL) que permite buscar en revocados.
+               byte[] val1 = signingCert.getExtensionValue("2.5.29.31");
+               if (val1 == null)
+               {
+                     if (signingCert.getSubjectDN().getName().equals(signingCert.getIssuerDN().getName())) {
+                         System.out.println("El certificado es un certificado raiz: " +
+                                 signingCert.getSubjectDN().getName());
+                     } else {
+                         System.out.println("El certificado NO tiene punto de distribuciÃ³n de CRL : " + signingCert.getSubjectDN().getName());
+                     }
+                 //return Collections.emptyList();
+                 }
+                else {
+                 //esta es la parte que deberías aumentar en si
+                 try {
+                     ASN1InputStream oAsnInStream = new ASN1InputStream(new ByteArrayInputStream(val1));
+                     DERObject derObj = oAsnInStream.readObject();
+                     DEROctetString dos = (DEROctetString) derObj;
+                     byte[] val2 = dos.getOctets();
+                     ASN1InputStream oAsnInStream2 = new ASN1InputStream(new ByteArrayInputStream(val2));
+                     DERObject derObj2 = oAsnInStream2.readObject();
+                     List<String> urls = getDERValue(derObj2);
+                     
+                     for (int j = 0; j < urls.size(); j++) 
+                     {
+                         datosUsuario.setCrl( urls.get(7) ) ;
+                     }
+                     //                datosUsuario.setCrl( new String(   distrPoint.substring( distrPoint.indexOf("U")+8, distrPoint.indexOf("ldap") - 8 )     ).trim() );     //distrPoint.substring( distrPoint.indexOf("U")+8, distrPoint.indexOf("U") + 12 )
+                     System.out.println(urls);// .println(urls);
+                 } catch (Exception e) {
+                     System.out.println("Error: " + e.getMessage());
+                     e.printStackTrace();
+                 }
+               } //fin else 
+                   
+                
+            }
+        
+          
+            return datosUsuario;
+        }
+        
+        /**
+        * para parsear el objeto y te devuelve el listado con las urls de los puntos de distribución
+
+        * @param derObj
+        * @return
+        */
+       
+       @SuppressWarnings("unchecked")
+        private List<String> getDERValue(DERObject derObj) {
+                if (derObj instanceof DERSequence) {
+                        List<String> list = new LinkedList<String>();
+                        DERSequence seq = (DERSequence) derObj;
+                        Enumeration enumeracion = seq.getObjects();
+                        while (enumeracion.hasMoreElements()) {
+                                DERObject nestedObj = (DERObject) enumeracion.nextElement();
+                                List<String> appo = getDERValue(nestedObj);
+                                if (appo != null) {
+                                        list.addAll(appo);
+                                }
+                        }
+                        return list;
+                } else if (derObj instanceof DERTaggedObject) {
+                        DERTaggedObject derTag = (DERTaggedObject) derObj;
+                        if ((derTag.isExplicit() && !derTag.isEmpty()) || derTag.getObject() instanceof DERSequence) {
+                                DERObject nestedObj = derTag.getObject();
+                                List<String> ret = getDERValue(nestedObj);
+                                return ret;
+                        } else {
+                                DEROctetString derOct = (DEROctetString) derTag.getObject();
+                                String val = new String(derOct.getOctets());
+                                List<String> ret = new LinkedList<String>();
+                                ret.add(val);
+                                return ret;
+                        }
+                } else if (derObj instanceof DERSet) {
+                        Enumeration enumSet = ((DERSet) derObj).getObjects();
+                        List<String> list = new LinkedList<String>();
+                        while (enumSet.hasMoreElements()) {
+                                DERObject nestedObj = (DERObject) enumSet.nextElement();
+                                List<String> appo = getDERValue(nestedObj);
+                                if (appo != null) {
+                                        list.addAll(appo);
+                                }
+                        }
+                        return list;
+                } else if (derObj instanceof DERObjectIdentifier) {
+                        DERObjectIdentifier derId = (DERObjectIdentifier) derObj;
+                        List<String> list = new LinkedList<String>();
+                        list.add(derId.getId());
+                        return list;
+                } else if (derObj instanceof DERPrintableString) {
+                        // hemos localizado un par id-valor
+                        String valor = ((DERPrintableString) derObj).getString();
+                        List<String> list = new LinkedList<String>();
+                        list.add(valor);
+                        return list;
+                } else {
+                        System.out.println("tipo de dato en ASN1 al recuperar las crls no es reconocido : " + derObj);
+                }
+                return null;
+        }
+}
