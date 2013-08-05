@@ -39,7 +39,8 @@ public class PdfViewerTest {
 //			firmaDigital.verificar(pdfViewer.getDireccionPDF());
 //			pdfViewer.obtenerFirmas();
 			JerseyClient webServiceLink = new JerseyClient();
-			System.out.println(webServiceLink.getToken());
+//			System.out.println(webServiceLink.getToken());
+			webServiceLink.guardarArchivo();
 			frame.add(pdfViewer);
 			frame.pack();
 			frame.setVisible(true);
