@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -13,6 +14,7 @@ import com.sun.pdfview.PDFPage;
 
 import ec.gov.informatica.firmadigital.FirmaDigital;
 import ec.gov.informatica.firmadigital.JerseyClient;
+import ec.gov.informatica.firmadigital.PdfRow;
 import ec.gov.informatica.firmadigital.signature.SignatureVerificationException;
 
 public class PdfViewerTest {
@@ -40,7 +42,7 @@ public class PdfViewerTest {
 //			pdfViewer.obtenerFirmas();
 			JerseyClient webServiceLink = new JerseyClient();
 //			System.out.println(webServiceLink.getToken());
-			webServiceLink.guardarArchivo();
+			webServiceLink.getPdfRows();
 			frame.add(pdfViewer);
 			frame.pack();
 			frame.setVisible(true);
