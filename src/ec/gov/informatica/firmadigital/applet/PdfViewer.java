@@ -38,7 +38,7 @@ import ec.gov.informatica.firmadigital.signature.BouncyCastleSignatureProcessor;
 import ec.gov.informatica.firmadigital.signature.CMSSignatureProcessor;
 import ec.gov.informatica.firmadigital.signature.SignatureVerificationException;
 
-public class PdfViewer extends JPanel {
+public class PdfViewer  extends JPanel{
 	/**
 	 * 
 	 */
@@ -218,66 +218,9 @@ public class PdfViewer extends JPanel {
 		return pagePanel;
 	}
 
-	/*public List<DatosUsuario> 	obtenerFirmas() {
-		PdfReader reader;
-		List<DatosUsuario> firmas=new ArrayList<>();
-		try {
-			CMSSignatureProcessor cms = new BouncyCastleSignatureProcessor(null); // keyStore
-			
-			List<DatosUsuario> firmantes = cms.obtenerFirmantes(getBytesFromFile(new File(direccionPDF)));
-			
-//			reader = new PdfReader(direccionPDF);
-//			AcroFields fields = reader.getAcroFields();
-//			for (Object signame : fields.getSignatureNames()) {
-////				System.out.println(signame);
-//				PdfDictionary sig = fields
-//						.getSignatureDictionary((String) signame);
-//				
-//				
-//				for(Object pdfName: sig.getKeys()){
-//					System.out.println(pdfName);
-//				}
-//				System.out.println(sig.getAsString(PdfName.NAME));
-//				System.out.println(sig.getAsString(PdfName.TYPE));
-//				System.out.println(sig.getAsString(PdfName.SUBFILTER));
-//				System.out.println(sig.getAsString(PdfName.LOCATION));
-//				System.out.println(sig.getAsString(PdfName.M));
-//				System.out.println(sig.getAsString(PdfName.BYTERANGE));
-//				System.out.println(sig.getAsString(PdfName.FILTER));
-//				System.out.println(sig.getAsString(PdfName.REASON));
-//			}
-			for(DatosUsuario datosUsuario:firmantes){
-				System.out.println(datosUsuario.getApellido());
-			}
-			
-		
-			return firmantes;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		} catch (SignatureVerificationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
 
-	}*/
 
-	 private byte[] getBytesFromFile(File file) throws IOException {
-	        InputStream is = new FileInputStream(file);
-	        long length = file.length();
-	        byte[] bytes = new byte[(int) length];
-	        int offset = 0;
-	        int numRead = 0;
-	        while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-	            offset += numRead;
-	        }
-	        if (offset < bytes.length) {
-	            throw new IOException("Could not completely read file " + file.getName());
-	        }
-	        is.close();
-	        return bytes;
-	    }
+
 	public void setPDFFile(PDFFile pdfFile) {
 		this.pdfFile = pdfFile;
 		currentPage = FIRST_PAGE;

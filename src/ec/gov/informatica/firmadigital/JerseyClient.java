@@ -25,6 +25,8 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 public class JerseyClient {
 	
 	private static final String URI ="http://pruebascoactivas.espaciolink.com/webservices/index.php/procesoslegales/";
+	private static final String RESUMEN ="resumenprocesolegal";
+	private static final String LISTA_PDF ="loadarchivos";
 
 	public String getHash() throws IOException {
 		Date d = new Date();
@@ -92,17 +94,55 @@ public class JerseyClient {
 
 	}
 	
-	public List<PdfRow> getPdfRows(){
+	public List<ResumenRow> getResumenRows(){
 		try {
 
 			Client client = Client.create();
 			client.addFilter(new LoggingFilter(System.out));
 			WebResource webResource = client
-					.resource(URI+"loadarchivos");
+					.resource(URI+RESUMEN);
 
 			MultivaluedMap queryParams = new MultivaluedMapImpl();
 			queryParams.add("token", getToken());
 //			 queryParams.add("hash", getHash());
+
+			ClientResponse response = webResource.queryParams(queryParams)
+					.accept("application/json").get(ClientResponse.class);
+			if (response.getStatus() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ response.getStatus());
+			}
+
+			String output = response.getEntity(String.class);
+			Gson gson = new Gson();
+			JsonParser parser = new JsonParser();
+		    JsonArray array = parser.parse(output).getAsJsonArray();
+		    List<ResumenRow> resumenRows= new ArrayList<ResumenRow>();
+		    for (int i=0; i<array.size();i++){
+		    	ResumenRow resumenRow = gson.fromJson(array.get(i), ResumenRow.class);
+		    	resumenRows.add(resumenRow);
+		    }
+//			List<PdfRow> pdfRows = gson.fromJson(output, List.class);
+			return resumenRows;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+
+		}
+	}
+	public List<PdfRow> getPdfRows(Integer idProceso){
+		try {
+
+			Client client = Client.create();
+			client.addFilter(new LoggingFilter(System.out));
+			WebResource webResource = client
+					.resource(URI+LISTA_PDF);
+
+			MultivaluedMap queryParams = new MultivaluedMapImpl();
+			queryParams.add("token", getToken());
+			 queryParams.add("proceso", idProceso.toString());
 
 			ClientResponse response = webResource.queryParams(queryParams)
 					.accept("application/json").get(ClientResponse.class);

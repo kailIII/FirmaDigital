@@ -4,12 +4,33 @@
  */
 package ec.gov.informatica.firmadigital.applet;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+
+import com.sun.pdfview.PDFFile;
+import com.sun.pdfview.PDFPage;
 
 import ec.gov.informatica.firmadigital.DatosUsuario;
 import ec.gov.informatica.firmadigital.FirmaDigital;
+import ec.gov.informatica.firmadigital.JerseyClient;
+import ec.gov.informatica.firmadigital.PdfRow;
+import ec.gov.informatica.firmadigital.ResumenRow;
 
 /**
  *
@@ -43,6 +64,7 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JLabel institucionLabel;
     FirmaDigital firmaDigital = new FirmaDigital();
     DatosUsuario datosUsuario;
+    JerseyClient jerseyClient = new JerseyClient();
     /**
      * Creates new form Login
      */
@@ -84,19 +106,11 @@ public class Login extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
+        jTable1=obtenerTablaResumne();
+        
+        
         jScrollPane1.setViewportView(jTable1);
-
+        agregarVisualizador(pdfViewerTab);
         dataGridTab.addTab("Documentos a Firmar", jScrollPane1);
         dataGridTab.addTab("Visor PDF", pdfViewerTab);
 
@@ -218,6 +232,7 @@ public class Login extends javax.swing.JFrame {
         );
 
         pack();
+//        agregarVisualizador(this);
     }// </editor-fold>                        
 
     private void sincronizarButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                  
@@ -268,9 +283,122 @@ public class Login extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Login().setVisible(true);
+            	new Login().setVisible(true);
+            	
+            	
+            	
+                
             }
         });
+    }
+    
+    public JTable obtenerTablaResumne(){
+    	JTable jTable = new JTable();
+    	List<ResumenRow> resumenRows = new  ArrayList<>();
+    	resumenRows= jerseyClient.getResumenRows();
+    	Object [][] tableData= new Object[resumenRows.size()][4];
+    	int i=0;
+    	for(ResumenRow resumenRow:resumenRows){
+    		tableData[i][0]= resumenRow.getPrProcesos_id();
+    		tableData[i][1]= resumenRow.getPrProcesos_nombre();
+    		tableData[i][2]= 5;
+    		tableData[i][3]= "Seleccionar Proceso";
+    		i++;
+    	}
+    	String[] titulosTabla=new String [] {"Cod", "Nombre", "Cantidad", "Seleccionar"};
+    	jTable1.setModel(new javax.swing.table.DefaultTableModel(tableData, titulosTabla));
+    	Action delete = new AbstractAction()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+//                JTable table = (JTable)e.getSource();
+                int modelRow = Integer.valueOf( e.getActionCommand() );
+                e.setSource(obtenerTablaPdf(modelRow));
+//                ((DefaultTableModel)table.getModel()).removeRow(modelRow);
+            }
+        };
+        ButtonColumn buttonColumn = new ButtonColumn(jTable1, delete, 3);
+        buttonColumn.setMnemonic(KeyEvent.VK_D);
+    	return jTable1;
+    }
+    
+    public JScrollPane agregarVisualizador(JScrollPane jScrollPane){
+    	try {
+			long heapSize = Runtime.getRuntime().totalMemory();
+			System.out.println("Heap Size = " + heapSize);
+
+//			JFrame frame = new JFrame("PDF Prueba");
+//			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+			// load a pdf from a byte buffer}
+			String direccionPDF="C:\\Users\\hp1\\Dropbox\\Profesional\\aprendizaje\\1932394850JavaFirmado.pdf";
+			File file = new File(direccionPDF);
+			RandomAccessFile raf = new RandomAccessFile(file, "r");
+			FileChannel channel = raf.getChannel();
+			ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0,
+					channel.size());
+			final PDFFile pdffile = new PDFFile(buf);
+			PdfViewer pdfViewer = new PdfViewer();
+			pdfViewer.setPDFFile(pdffile);
+			pdfViewer.setDireccionPDF(direccionPDF);
+//			FirmaDigital firmaDigital = new FirmaDigital();
+//			firmaDigital.verificar(pdfViewer.getDireccionPDF());
+//			pdfViewer.obtenerFirmas();
+			JerseyClient webServiceLink = new JerseyClient();
+//			System.out.println(webServiceLink.getToken());
+//			webServiceLink.getPdfRows();
+			jScrollPane.setViewportView(pdfViewer);
+//			jScrollPane.pack();
+//			jScrollPane.setVisible(true);
+
+			PDFPage page = pdffile.getPage(0);
+			pdfViewer.getPagePanel().showPage(page);
+			System.out.println("acabando");
+			return jScrollPane;
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("NO hay los archivos");
+			return null;
+		} 
+    }
+    
+    public JTable obtenerTablaPdf(Integer idProceso){
+    	JTable jTable = new JTable();
+    	List<PdfRow> pdfRows = new  ArrayList<>();
+    	pdfRows= jerseyClient.getPdfRows(idProceso);
+    	Object [][] tableData= new Object[pdfRows.size()][6];
+    	int i=0;
+    	for(PdfRow pdfRow:pdfRows){
+    		
+    		
+    		tableData[i][0]= pdfRow.getNomProceso();
+    		tableData[i][1]= pdfRow.getPaso();
+    		tableData[i][2]= pdfRow.getNomDemandado();
+    		tableData[i][3]= pdfRow.getNomPdf();
+    		tableData[i][4]= "Visualizar";
+    		tableData[i][5]= false;
+    		i++;
+    	}
+    	String[] titulosTabla=new String [] {"Proceso", "Paso", "Demandado", "Nombre PDF", "Visualizar","Seleccionar para Firmar"};
+    	jTable1.setModel(new javax.swing.table.DefaultTableModel(tableData, titulosTabla));
+    	Action delete = new AbstractAction()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                JTable table = (JTable)e.getSource();
+                int modelRow = Integer.valueOf( e.getActionCommand() );
+                ((DefaultTableModel)table.getModel()).removeRow(modelRow);
+            }
+        };
+//        ButtonColumn buttonColumnVisualizar = new ButtonColumn(jTable1, delete, 4);
+        ButtonColumn buttonColumnSeleccionar = new ButtonColumn(jTable1, delete, 4);
+//        buttonColumnVisualizar.setMnemonic(KeyEvent.VK_D);
+        buttonColumnSeleccionar.setMnemonic(KeyEvent.VK_D);
+        jTable1.getColumnModel().getColumn( 5 ).setCellEditor( new CeldaCheckBox() );
+        //para pintar la columna con el CheckBox en la tabla, en este caso, la primera columna
+        jTable1.getColumnModel().getColumn( 5 ).setCellRenderer(new RenderCheckBox());      
+
+    	return jTable1;
     }
          
 }

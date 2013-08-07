@@ -42,7 +42,7 @@ public class PdfViewerTest {
 //			pdfViewer.obtenerFirmas();
 			JerseyClient webServiceLink = new JerseyClient();
 //			System.out.println(webServiceLink.getToken());
-			webServiceLink.getPdfRows();
+//			webServiceLink.getPdfRows();
 			frame.add(pdfViewer);
 			frame.pack();
 			frame.setVisible(true);
