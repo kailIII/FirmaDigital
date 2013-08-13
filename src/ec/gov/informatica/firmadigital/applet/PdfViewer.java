@@ -87,7 +87,8 @@ public class PdfViewer  extends JPanel{
 		scrollPane.setViewportView(viewPanel);
 
 		pagePanel = new PagePanel();
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screenSize = new Dimension(740, 500);
+//		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		pagePanel.setPreferredSize(screenSize);
 		viewPanel.add(pagePanel, BorderLayout.CENTER);
 

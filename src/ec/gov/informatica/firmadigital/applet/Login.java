@@ -21,6 +21,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
 import com.sun.pdfview.PDFFile;
@@ -110,7 +111,7 @@ public class Login extends javax.swing.JFrame {
         
         
         jScrollPane1.setViewportView(jTable1);
-        agregarVisualizador(pdfViewerTab);
+        agregarVisualizador(pdfViewerTab, "C:\\Users\\hp1\\Dropbox\\Profesional\\aprendizaje\\1932394850JavaFirmado.pdf");
         dataGridTab.addTab("Documentos a Firmar", jScrollPane1);
         dataGridTab.addTab("Visor PDF", pdfViewerTab);
 
@@ -127,7 +128,7 @@ public class Login extends javax.swing.JFrame {
             tabPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(tabPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(dataGridTab, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                .addComponent(dataGridTab, javax.swing.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -263,12 +264,14 @@ public class Login extends javax.swing.JFrame {
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
+        	UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("Nimbus".equals(info.getName())) {
+//                	
+//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                    break;
+//                }
+//            }
         } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(Login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
@@ -301,6 +304,7 @@ public class Login extends javax.swing.JFrame {
     	for(ResumenRow resumenRow:resumenRows){
     		tableData[i][0]= resumenRow.getPrProcesos_id();
     		tableData[i][1]= resumenRow.getPrProcesos_nombre();
+    		
     		tableData[i][2]= 5;
     		tableData[i][3]= "Seleccionar Proceso";
     		i++;
@@ -314,6 +318,7 @@ public class Login extends javax.swing.JFrame {
 //                JTable table = (JTable)e.getSource();
                 int modelRow = Integer.valueOf( e.getActionCommand() );
                 e.setSource(obtenerTablaPdf(modelRow));
+                
 //                ((DefaultTableModel)table.getModel()).removeRow(modelRow);
             }
         };
@@ -322,7 +327,7 @@ public class Login extends javax.swing.JFrame {
     	return jTable1;
     }
     
-    public JScrollPane agregarVisualizador(JScrollPane jScrollPane){
+    public JScrollPane agregarVisualizador(JScrollPane jScrollPane, String direccionPDF){
     	try {
 			long heapSize = Runtime.getRuntime().totalMemory();
 			System.out.println("Heap Size = " + heapSize);
@@ -331,7 +336,7 @@ public class Login extends javax.swing.JFrame {
 //			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 			// load a pdf from a byte buffer}
-			String direccionPDF="C:\\Users\\hp1\\Dropbox\\Profesional\\aprendizaje\\1932394850JavaFirmado.pdf";
+//			String direccionPDF="C:\\Users\\hp1\\Dropbox\\Profesional\\aprendizaje\\1932394850JavaFirmado.pdf";
 			File file = new File(direccionPDF);
 			RandomAccessFile raf = new RandomAccessFile(file, "r");
 			FileChannel channel = raf.getChannel();
@@ -375,7 +380,7 @@ public class Login extends javax.swing.JFrame {
     		tableData[i][1]= pdfRow.getPaso();
     		tableData[i][2]= pdfRow.getNomDemandado();
     		tableData[i][3]= pdfRow.getNomPdf();
-    		tableData[i][4]= "Visualizar";
+    		tableData[i][4]= pdfRow.getIdPdf();
     		tableData[i][5]= false;
     		i++;
     	}
@@ -385,9 +390,19 @@ public class Login extends javax.swing.JFrame {
         {
             public void actionPerformed(ActionEvent e)
             {
+            	
                 JTable table = (JTable)e.getSource();
                 int modelRow = Integer.valueOf( e.getActionCommand() );
-                ((DefaultTableModel)table.getModel()).removeRow(modelRow);
+                ((DefaultTableModel)table.getModel()).getValueAt(modelRow, 4);
+                
+                String nomProceso=(String)((DefaultTableModel)table.getModel()).getValueAt(modelRow, 0);
+            	String paso=(String)((DefaultTableModel)table.getModel()).getValueAt(modelRow, 1);
+            	String nomDemandado=(String)((DefaultTableModel)table.getModel()).getValueAt(modelRow, 2);
+            	int idPdf=(Integer)((DefaultTableModel)table.getModel()).getValueAt(modelRow, 4);
+            	String nomPdf=(String)((DefaultTableModel)table.getModel()).getValueAt(modelRow, 3);
+            	
+                agregarVisualizador(pdfViewerTab, nomProceso+"-"+paso+"-"+nomDemandado+"-"+idPdf+"-"+nomPdf);
+                dataGridTab.setSelectedIndex(1);
             }
         };
 //        ButtonColumn buttonColumnVisualizar = new ButtonColumn(jTable1, delete, 4);

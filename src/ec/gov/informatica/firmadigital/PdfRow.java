@@ -12,6 +12,7 @@ public class PdfRow {
 	private String nomPdf;
 	private String paso;
 	private String file;
+	private int idPdf;
 	private transient byte[] pdfBytes;
 
 	public  void generarBytes() throws IOException {
@@ -20,7 +21,7 @@ public class PdfRow {
 //			respuesta = respuesta.substring(1, respuesta.length() - 1);
 			respuesta = respuesta.replace("\\", "");
 			setPdfBytes(decoder.decodeBuffer(respuesta));
-			FileOutputStream fos = new FileOutputStream(getNomPdf());
+			FileOutputStream fos = new FileOutputStream(nomProceso+"-"+paso+"-"+nomDemandado+"-"+idPdf+"-"+nomPdf);
 			fos.write(getPdfBytes());
 			fos.close();
 	}
@@ -72,5 +73,14 @@ public class PdfRow {
 	public void setPdfBytes(byte[] pdfBytes) {
 		this.pdfBytes = pdfBytes;
 	}
+
+	public int getIdPdf() {
+		return idPdf;
+	}
+
+	public void setIdPdf(int idPdf) {
+		this.idPdf = idPdf;
+	}
+	
 
 }
