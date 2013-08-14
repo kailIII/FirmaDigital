@@ -36,6 +36,7 @@ import ec.gov.informatica.firmadigital.FirmaDigital;
 import ec.gov.informatica.firmadigital.JerseyClient;
 import ec.gov.informatica.firmadigital.PdfRow;
 import ec.gov.informatica.firmadigital.ResumenRow;
+import ec.gov.informatica.firmadigital.signature.SignatureVerificationException;
 
 /**
  * 
@@ -48,11 +49,12 @@ public class Login extends javax.swing.JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 	private javax.swing.JLabel claveLabel;
-	private javax.swing.JTextField claveTextField;
+	private javax.swing.JPasswordField claveTextField;
 	private javax.swing.JTabbedPane dataGridTab;
 	private javax.swing.JButton firmarButton;
 	private javax.swing.JPanel headerPanel;
 	private javax.swing.JPanel datosInformativosPanel;
+	private javax.swing.JPanel firmantesPanel;
 	private javax.swing.JScrollPane jScrollPane1;
 	private javax.swing.JTable jTable1;
 	private javax.swing.JButton loginButton;
@@ -89,6 +91,7 @@ public class Login extends javax.swing.JFrame {
 	private void initComponents() {
 
 		tabPanel = new javax.swing.JPanel();
+		firmantesPanel = new javax.swing.JPanel();
 		dataGridTab = new javax.swing.JTabbedPane();
 		jScrollPane1 = new javax.swing.JScrollPane();
 		jTable1 = new javax.swing.JTable();
@@ -97,7 +100,7 @@ public class Login extends javax.swing.JFrame {
 		sincronizarButton = new javax.swing.JButton();
 		headerPanel = new javax.swing.JPanel();
 		claveLabel = new javax.swing.JLabel();
-		claveTextField = new javax.swing.JTextField();
+		claveTextField = new javax.swing.JPasswordField(20);
 		loginButton = new javax.swing.JButton();
 
 		/*
@@ -258,7 +261,7 @@ public class Login extends javax.swing.JFrame {
 		try {
 			myPicture = ImageIO
 					.read(new File(
-							"/home/xavier/java/workspace/FirmaDigital/dimensiones-firmadigital.jpg"));
+							"dimensiones-firmadigital.jpg"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -399,8 +402,41 @@ public class Login extends javax.swing.JFrame {
 		pack();
 	}
 
+	public void llenarDatosDeUsuario(DatosUsuario datosUsuario){
+		
+		if(datosUsuario.getNombre()!=null && !datosUsuario.getNombre().isEmpty()){
+			nombreTextField.setText(datosUsuario.getNombre());
+		}else{
+			nombreTextField.setText("N/A");
+		}
+		if(datosUsuario.getApellido()!=null && !datosUsuario.getApellido().isEmpty()){
+			apellidoTextField.setText(datosUsuario.getApellido());
+		}else{
+			apellidoTextField.setText("N/A");
+		}
+		if(datosUsuario.getCedula()!=null && !datosUsuario.getCedula().isEmpty()){
+			cedulaTextField.setText(datosUsuario.getCedula());
+		}else{
+			cedulaTextField.setText("N/A");
+		}
+		if(datosUsuario.getInstitucion()!=null && !datosUsuario.getInstitucion().isEmpty()){
+			institucionTextField.setText(datosUsuario.getInstitucion());
+		}else{
+			institucionTextField.setText("N/A");
+		}
+		
+	}
+	
 	public void initializarLogueado() {
 		// elimina todos los componentes anteriores del JPanel
+		
+		DatosUsuario datosUsuario = firmaDigital
+		.login(claveTextField.getText());
+		if (datosUsuario == null) {
+			JOptionPane.showMessageDialog(null, "Datos incorrectos");
+			return;
+		}
+		
 		getContentPane().removeAll();
 		getContentPane().revalidate();
 		// inicializa datos del usario logueado
@@ -417,16 +453,14 @@ public class Login extends javax.swing.JFrame {
 		datosInformativosLabel.setText("Datos Informativos");
 		nombreLabel.setText("Nombres:");
 		apellidoLabel.setText("Apellidos:");
-		cedulaLabel.setText("CÃ©dula:");
-		institucionLabel.setText("InstituciÃ³n:");
+		cedulaLabel.setText("Cédula:");
+		institucionLabel.setText("Institución:");
 		nombreTextField.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-		nombreTextField.setText("N/A");
 		apellidoTextField.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-		apellidoTextField.setText("N/A");
 		cedulaTextField.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-		cedulaTextField.setText("N/A");
 		institucionTextField.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-		institucionTextField.setText("N/A");
+		
+		llenarDatosDeUsuario(datosUsuario);
 
 		// agrega el bloque de datos informativos
 		datosInformativosPanel = new javax.swing.JPanel();
@@ -685,6 +719,12 @@ public class Login extends javax.swing.JFrame {
 		pack();
 		getContentPane().revalidate();
 		getContentPane().repaint();
+		try {
+			firmaDigital.verificar("C:\\Users\\hp1\\Dropbox\\Profesional\\aprendizaje\\1932394850JavaFirmado.pdf");
+		} catch (SignatureVerificationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
@@ -698,11 +738,7 @@ public class Login extends javax.swing.JFrame {
 //				.login(claveTextField.getText());
 		initializarLogueado();
 		
-		if (datosUsuario != null) {
-			JOptionPane.showMessageDialog(null, "Correcto");
-		} else {
-			JOptionPane.showMessageDialog(null, "Incorrecto");
-		}
+		
 	}
 
 	/**
@@ -806,7 +842,7 @@ public class Login extends javax.swing.JFrame {
 			ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0,
 					channel.size());
 			final PDFFile pdffile = new PDFFile(buf);
-			PdfViewer pdfViewer = new PdfViewer();
+			PdfViewer pdfViewer = new PdfViewer(direccionPDF);
 			pdfViewer.setPDFFile(pdffile);
 			pdfViewer.setDireccionPDF(direccionPDF);
 			// FirmaDigital firmaDigital = new FirmaDigital();

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -34,11 +35,12 @@ import com.sun.pdfview.PDFPage;
 import com.sun.pdfview.PagePanel;
 
 import ec.gov.informatica.firmadigital.DatosUsuario;
+import ec.gov.informatica.firmadigital.FirmaDigital;
 import ec.gov.informatica.firmadigital.signature.BouncyCastleSignatureProcessor;
 import ec.gov.informatica.firmadigital.signature.CMSSignatureProcessor;
 import ec.gov.informatica.firmadigital.signature.SignatureVerificationException;
 
-public class PdfViewer  extends JPanel{
+public class PdfViewer extends JPanel {
 	/**
 	 * 
 	 */
@@ -61,12 +63,13 @@ public class PdfViewer  extends JPanel{
 	private PagePanel pagePanel;
 	private PDFFile pdfFile;
 	private String direccionPDF;
+	private javax.swing.JLabel jLabel2;
 
-	public PdfViewer() {
-		initial();
+	public PdfViewer(String path) {
+		initial(path);
 	}
 
-	private void initial() {
+	private void initial(String path) {
 		setLayout(new BorderLayout(0, 0));
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		add(topPanel, BorderLayout.NORTH);
@@ -88,9 +91,88 @@ public class PdfViewer  extends JPanel{
 
 		pagePanel = new PagePanel();
 		Dimension screenSize = new Dimension(740, 500);
-//		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		// Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		pagePanel.setPreferredSize(screenSize);
-		viewPanel.add(pagePanel, BorderLayout.CENTER);
+		// Forma el panel de firmantes
+		JPanel firmantesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		firmantesPanel.setBackground(new java.awt.Color(255, 255, 255));
+		firmantesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(
+				javax.swing.BorderFactory.createLineBorder(new java.awt.Color(
+						153, 153, 153)), "Firmantes",
+				javax.swing.border.TitledBorder.LEFT,
+				javax.swing.border.TitledBorder.ABOVE_TOP, new java.awt.Font(
+						"Arial", 1, 12))); // NOI18N
+		jLabel2 = new javax.swing.JLabel();
+
+		javax.swing.GroupLayout firmantesPanelLayout = new javax.swing.GroupLayout(
+				firmantesPanel);
+		FirmaDigital firmaDigital = new FirmaDigital();
+		String firmantes = "<html><ul><li>pruebaaa de esto es es unas dasq</li>";
+		try {
+			for (String firmante : firmaDigital.verificar(path)) {
+				firmantes += "<li>" + firmante+"</li>";
+			}
+		} catch (SignatureVerificationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		firmantes += "</ul></html>";
+		jLabel2.setText(firmantes);
+		firmantesPanel.setLayout(firmantesPanelLayout);
+		firmantesPanelLayout.setHorizontalGroup(firmantesPanelLayout
+				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addGroup(
+						javax.swing.GroupLayout.Alignment.TRAILING,
+						firmantesPanelLayout.createSequentialGroup()
+								.addContainerGap().addComponent(jLabel2)
+								.addGap(52, 52, 52)));
+		firmantesPanelLayout.setVerticalGroup(firmantesPanelLayout
+				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addGroup(
+						firmantesPanelLayout.createSequentialGroup()
+								.addGap(10, 10, 10).addComponent(jLabel2)
+								.addContainerGap(242, Short.MAX_VALUE)));
+
+		// Agraga los paneles paralelos para el pdf y los firmantes
+		javax.swing.GroupLayout viewPanelLayout = new javax.swing.GroupLayout(
+				viewPanel);
+		viewPanel.setLayout(viewPanelLayout);
+		viewPanelLayout.setHorizontalGroup(viewPanelLayout.createParallelGroup(
+				javax.swing.GroupLayout.Alignment.LEADING).addGroup(
+				viewPanelLayout
+						.createSequentialGroup()
+						.addComponent(firmantesPanel,
+								javax.swing.GroupLayout.PREFERRED_SIZE, 200,
+								javax.swing.GroupLayout.PREFERRED_SIZE)
+						.addGap(18, 18, 18)
+						.addComponent(pagePanel,
+								javax.swing.GroupLayout.PREFERRED_SIZE, 540,
+								javax.swing.GroupLayout.PREFERRED_SIZE)
+						.addContainerGap(122, Short.MAX_VALUE)));
+		viewPanelLayout
+				.setVerticalGroup(viewPanelLayout
+						.createParallelGroup(
+								javax.swing.GroupLayout.Alignment.LEADING)
+						.addGroup(
+								viewPanelLayout
+										.createSequentialGroup()
+										.addGroup(
+												viewPanelLayout
+														.createParallelGroup(
+																javax.swing.GroupLayout.Alignment.LEADING)
+														.addComponent(
+																firmantesPanel,
+																javax.swing.GroupLayout.PREFERRED_SIZE,
+																javax.swing.GroupLayout.DEFAULT_SIZE,
+																javax.swing.GroupLayout.PREFERRED_SIZE)
+														.addComponent(
+																pagePanel,
+																javax.swing.GroupLayout.PREFERRED_SIZE,
+																javax.swing.GroupLayout.DEFAULT_SIZE,
+																javax.swing.GroupLayout.PREFERRED_SIZE))
+										.addGap(0, 0, Short.MAX_VALUE)));
+
+		// viewPanel.add(pagePanel, BorderLayout.CENTER);
 
 		disableAllNavigationButton();
 
@@ -219,9 +301,6 @@ public class PdfViewer  extends JPanel{
 		return pagePanel;
 	}
 
-
-
-
 	public void setPDFFile(PDFFile pdfFile) {
 		this.pdfFile = pdfFile;
 		currentPage = FIRST_PAGE;
@@ -240,6 +319,5 @@ public class PdfViewer  extends JPanel{
 	public void setDireccionPDF(String direccionPDF) {
 		this.direccionPDF = direccionPDF;
 	}
-	
-	
+
 }

@@ -267,7 +267,7 @@ public class FirmaDigital {
 					e.printStackTrace();
 				}
 			} // fin else
-			// Fin validacion CRL
+				// Fin validacion CRL
 
 			// System.out.println("Dist_point:" + distrPoint );
 			// OJO : Esta validacion puede fallar si la lista de distribucion
@@ -519,22 +519,27 @@ public class FirmaDigital {
 						+ e.getMessage());
 				return null;
 			}
-			
-			
-			certs = keyStore.getCertificateChain(alias);
-            String revocados = ""; // para verificar revocados
-            revocados = verificaRevocados(((X509Certificate) certs[0]).getSerialNumber().toString(), tipoCertificado);
-            if (!revocados.isEmpty()) {
-                System.out.println(" CERTIFICADO REVOCADO " + revocados);
-                return null;
-            }
-            
-            this.datosUsuarioActual = this.crearDatosUsuario((X509Certificate) certs[0]); //llena la clase de tipo datosUsuario con el certificado actual
-			
-			
-			return  this.datosUsuarioActual;
 
-			
+			certs = keyStore.getCertificateChain(alias);
+			String revocados = ""; // para verificar revocados
+			revocados = verificaRevocados(((X509Certificate) certs[0])
+					.getSerialNumber().toString(), tipoCertificado);
+			if (!revocados.isEmpty()) {
+				System.out.println(" CERTIFICADO REVOCADO " + revocados);
+				return null;
+			}
+
+			this.datosUsuarioActual = this
+					.crearDatosUsuario((X509Certificate) certs[0]); // llena la
+																	// clase de
+																	// tipo
+																	// datosUsuario
+																	// con el
+																	// certificado
+																	// actual
+
+			return this.datosUsuarioActual;
+
 		} catch (GeneralSecurityException e) {
 			throw new RuntimeException(e); // FIXME
 		}
@@ -571,51 +576,58 @@ public class FirmaDigital {
 		 * // FIXME }
 		 */
 	}
-	
-	public void verificar(String direccionPDF) throws SignatureVerificationException {
+
+	public List<String> verificar(String direccionPDF)
+			throws SignatureVerificationException {
 		try {
-			            if(direccionPDF==null || direccionPDF.isEmpty()) {
-			                System.out.print("Necesito el nombre del PDF a comprobar");
-			                System.exit(1);
-			            }
-			  
-			            Random rnd = new Random();
-			            KeyStore kall = PdfPKCS7.loadCacertsKeyStore();
-			            PdfReader reader = new PdfReader(direccionPDF);
-			            AcroFields af = reader.getAcroFields();
-			            ArrayList names = af.getSignatureNames();
-			            for (int k = 0; k < names.size(); ++k) {
-			            	
-			               String name = (String)names.get(k);
-			               System.out.println(name);
-			               int random = rnd.nextInt();
-			               FileOutputStream out = new FileOutputStream("revision_" + random + "_" + af.getRevision(name) + ".pdf");
-			 
-			               byte bb[] = new byte[8192];
-			               InputStream ip = af.extractRevision(name);
-			               int n = 0;
-			               while ((n = ip.read(bb)) > 0)
-			               out.write(bb, 0, n);
-			               out.close();
-			               ip.close();
-			 
-			               PdfPKCS7 pk = af.verifySignature(name);
-			               Calendar cal = pk.getSignDate();
-			               Certificate pkc[] = pk.getCertificates();
-			               Object fails[] = PdfPKCS7.verifyCertificates(pkc, kall, null, cal);
-			               if (fails == null) {
-			                   System.out.print(pk.getSignName());
-			               }
-			               else {
-			                   System.out.print("Firma no válida");
-			               }
-			               File f = new File("revision_" + random + "_" + af.getRevision(name) + ".pdf");
-			               f.delete();
-			            }
-			        }
-			        catch(Exception e) {
-			            e.printStackTrace();
-			        }
+			List<String> firmantes=new ArrayList<>();
+			if (direccionPDF == null || direccionPDF.isEmpty()) {
+				System.out.print("Necesito el nombre del PDF a comprobar");
+				System.exit(1);
+			}
+
+			Random rnd = new Random();
+			KeyStore kall = PdfPKCS7.loadCacertsKeyStore();
+			PdfReader reader = new PdfReader(direccionPDF);
+			AcroFields af = reader.getAcroFields();
+			ArrayList names = af.getSignatureNames();
+			for (int k = 0; k < names.size(); ++k) {
+
+				String name = (String) names.get(k);
+//				System.out.println(name);
+				int random = rnd.nextInt();
+				FileOutputStream out = new FileOutputStream("revision_"
+						+ random + "_" + af.getRevision(name) + ".pdf");
+
+				byte bb[] = new byte[8192];
+				InputStream ip = af.extractRevision(name);
+				int n = 0;
+				while ((n = ip.read(bb)) > 0)
+					out.write(bb, 0, n);
+				out.close();
+				ip.close();
+
+				PdfPKCS7 pk = af.verifySignature(name);
+				Calendar cal = pk.getSignDate();
+				Certificate pkc[] = pk.getCertificates();
+				Object fails[] = PdfPKCS7.verifyCertificates(pkc, kall, null,
+						cal);
+				String firmante=pk.getSignName()+" ("+name+") - ";
+				if (fails == null) {
+					firmante +="Firma Verificada";
+				} else {
+					firmante +="Firma No Válida";
+				}
+				File f = new File("revision_" + random + "_"
+						+ af.getRevision(name) + ".pdf");
+				f.delete();
+				firmantes.add(firmante);
+			}
+			return firmantes;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 
 	}
 

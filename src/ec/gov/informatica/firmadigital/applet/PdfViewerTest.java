@@ -34,21 +34,21 @@ public class PdfViewerTest {
 			ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0,
 					channel.size());
 			final PDFFile pdffile = new PDFFile(buf);
-			PdfViewer pdfViewer = new PdfViewer();
-			pdfViewer.setPDFFile(pdffile);
-			pdfViewer.setDireccionPDF(direccionPDF);
+//			PdfViewer pdfViewer = new PdfViewer();
+//			pdfViewer.setPDFFile(pdffile);
+//			pdfViewer.setDireccionPDF(direccionPDF);
 //			FirmaDigital firmaDigital = new FirmaDigital();
 //			firmaDigital.verificar(pdfViewer.getDireccionPDF());
 //			pdfViewer.obtenerFirmas();
 			JerseyClient webServiceLink = new JerseyClient();
 //			System.out.println(webServiceLink.getToken());
 //			webServiceLink.getPdfRows();
-			frame.add(pdfViewer);
+//			frame.add(pdfViewer);
 			frame.pack();
 			frame.setVisible(true);
 
 			PDFPage page = pdffile.getPage(0);
-			pdfViewer.getPagePanel().showPage(page);
+//			pdfViewer.getPagePanel().showPage(page);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("NO hay los archivos");
