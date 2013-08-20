@@ -2,15 +2,15 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/home/xavier/java/workspace/FirmaDigital/proyFirmaLiberado.jar"/>
-	<classpathentry kind="lib" path="/home/xavier/java/workspace/FirmaDigital/pdf-renderer-1.0.5.jar"/>
-	<classpathentry kind="lib" path="/home/xavier/java/workspace/FirmaDigital/jersey-core-1.8.jar"/>
-	<classpathentry kind="lib" path="/home/xavier/java/workspace/FirmaDigital/jersey-client-1.8.jar"/>
-	<classpathentry kind="lib" path="/home/xavier/java/workspace/FirmaDigital/itext-2.1.7.jar"/>
-	<classpathentry kind="lib" path="/home/xavier/java/workspace/FirmaDigital/guava-13.0.1.jar"/>
-	<classpathentry kind="lib" path="/home/xavier/java/workspace/FirmaDigital/gson-2.2.4.jar"/>
-	<classpathentry kind="lib" path="/home/xavier/java/workspace/FirmaDigital/commons-codec-1.8.jar"/>
-	<classpathentry kind="lib" path="/home/xavier/java/workspace/FirmaDigital/bcprov-jdk16-141.jar"/>
-	<classpathentry kind="lib" path="/home/xavier/java/workspace/FirmaDigital/bcmail-jdk16-141.jar"/>
+	<classpathentry kind="lib" path="C:/java/workspace/FirmaDigital/bcmail-jdk16-141.jar"/>
+	<classpathentry kind="lib" path="C:/java/workspace/FirmaDigital/bcprov-jdk16-141.jar"/>
+	<classpathentry kind="lib" path="C:/java/workspace/FirmaDigital/commons-codec-1.8.jar"/>
+	<classpathentry kind="lib" path="C:/java/workspace/FirmaDigital/gson-2.2.4.jar"/>
+	<classpathentry kind="lib" path="C:/java/workspace/FirmaDigital/guava-13.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/java/workspace/FirmaDigital/itext-2.1.7.jar"/>
+	<classpathentry kind="lib" path="C:/java/workspace/FirmaDigital/jersey-client-1.8.jar"/>
+	<classpathentry kind="lib" path="C:/java/workspace/FirmaDigital/jersey-core-1.8.jar"/>
+	<classpathentry kind="lib" path="C:/java/workspace/FirmaDigital/pdf-renderer-1.0.5.jar"/>
+	<classpathentry kind="lib" path="C:/java/workspace/FirmaDigital/proyFirmaLiberado.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

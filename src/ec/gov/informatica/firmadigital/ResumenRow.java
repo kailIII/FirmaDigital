@@ -2,26 +2,26 @@ package ec.gov.informatica.firmadigital;
 
 
 public class ResumenRow {
-	private int prProcesos_id;
-	private String prProcesos_nombre;
-//	private int prProcesos_sum;
-	public int getPrProcesos_id() {
-		return prProcesos_id;
+	private int idProceso;
+	private String nombreProceso;
+	private int sumaProcesos;
+	public int getIdProceso() {
+		return idProceso;
 	}
-	public void setPrProcesos_id(int prProcesos_id) {
-		this.prProcesos_id = prProcesos_id;
+	public void setIdProceso(int idProceso) {
+		this.idProceso = idProceso;
 	}
-	public String getPrProcesos_nombre() {
-		return prProcesos_nombre;
+	public String getNombreProceso() {
+		return nombreProceso;
 	}
-	public void setPrProcesos_nombre(String prProcesos_nombre) {
-		this.prProcesos_nombre = prProcesos_nombre;
+	public void setNombreProceso(String nombreProceso) {
+		this.nombreProceso = nombreProceso;
 	}
-//	public int getPrProcesos_sum() {
-//		return prProcesos_sum;
-//	}
-//	public void setPrProcesos_sum(int prProcesos_sum) {
-//		this.prProcesos_sum = prProcesos_sum;
-//	}
+	public int getSumaProcesos() {
+		return sumaProcesos;
+	}
+	public void setSumaProcesos(int sumaProcesos) {
+		this.sumaProcesos = sumaProcesos;
+	}
 
 }

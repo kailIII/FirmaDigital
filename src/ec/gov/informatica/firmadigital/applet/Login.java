@@ -795,27 +795,27 @@ public class Login extends javax.swing.JFrame {
 	public JTable obtenerTablaResumne() {
 		JTable jTable = new JTable();
 		List<ResumenRow> resumenRows = new ArrayList<>();
-		resumenRows = jerseyClient.getResumenRows();
+		resumenRows = jerseyClient.getResumenRows("1718263153");
 		Object[][] tableData = new Object[resumenRows.size()][4];
 		int i = 0;
 		for (ResumenRow resumenRow : resumenRows) {
-			tableData[i][0] = resumenRow.getPrProcesos_id();
-			tableData[i][1] = resumenRow.getPrProcesos_nombre();
+			tableData[i][0] = resumenRow.getIdProceso();
+			tableData[i][1] = resumenRow.getNombreProceso();
 
-			tableData[i][2] = 5;
+			tableData[i][2] = resumenRow.getSumaProcesos();
 			tableData[i][3] = "Seleccionar Proceso";
 			i++;
 		}
-		String[] titulosTabla = new String[] { "Cod", "Nombre", "Cantidad",
+		String[] titulosTabla = new String[] { "Código del Proceso", "Nombre", "Cantidad",
 				"Seleccionar" };
 		jTable1.setModel(new javax.swing.table.DefaultTableModel(tableData,
 				titulosTabla));
 		Action delete = new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				// JTable table = (JTable)e.getSource();
+				 JTable table = (JTable)e.getSource();
 				int modelRow = Integer.valueOf(e.getActionCommand());
-				e.setSource(obtenerTablaPdf(modelRow));
-
+				e.setSource(obtenerTablaPdf((Integer)((DefaultTableModel)table.getModel()).getValueAt(modelRow, 0)));
+				
 				// ((DefaultTableModel)table.getModel()).removeRow(modelRow);
 			}
 		};
@@ -848,7 +848,7 @@ public class Login extends javax.swing.JFrame {
 			// FirmaDigital firmaDigital = new FirmaDigital();
 			// firmaDigital.verificar(pdfViewer.getDireccionPDF());
 			// pdfViewer.obtenerFirmas();
-			JerseyClient webServiceLink = new JerseyClient();
+//			JerseyClient webServiceLink = new JerseyClient();
 			// System.out.println(webServiceLink.getToken());
 			// webServiceLink.getPdfRows();
 			jScrollPane.setViewportView(pdfViewer);
@@ -869,26 +869,30 @@ public class Login extends javax.swing.JFrame {
 	public JTable obtenerTablaPdf(Integer idProceso) {
 		JTable jTable = new JTable();
 		List<PdfRow> pdfRows = new ArrayList<>();
-		pdfRows = jerseyClient.getPdfRows(idProceso);
-		Object[][] tableData = new Object[pdfRows.size()][6];
+		pdfRows = jerseyClient.getPdfRows("1718263153",idProceso);
+		Object[][] tableData = new Object[pdfRows.size()][7];
 		int i = 0;
 		for (PdfRow pdfRow : pdfRows) {
 
-			tableData[i][0] = pdfRow.getNomProceso();
-			tableData[i][1] = pdfRow.getPaso();
-			tableData[i][2] = pdfRow.getNomDemandado();
-			tableData[i][3] = pdfRow.getNomPdf();
+			tableData[i][0] = pdfRow.getNombreProceso();
+			tableData[i][1] = pdfRow.getNombrePaso();
+			tableData[i][2] = pdfRow.getApellidosDemandado()+" "+pdfRow.getNombresDemandado();
+			tableData[i][3] = pdfRow.getNombrePdf();
 			tableData[i][4] = pdfRow.getIdPdf();
 			tableData[i][5] = false;
+			tableData[i][6] = "Visualizar";
 			i++;
 		}
 		String[] titulosTabla = new String[] { "Proceso", "Paso", "Demandado",
-				"Nombre PDF", "Visualizar", "Seleccionar para Firmar" };
+				"Nombre PDF", "", "Seleccionar para Firmar" ,"Visualizar"};
 		jTable1.setModel(new javax.swing.table.DefaultTableModel(tableData,
 				titulosTabla));
 		Action delete = new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-
+				
+				JerseyClient jerseyClient= new JerseyClient();
+				
+				
 				JTable table = (JTable) e.getSource();
 				int modelRow = Integer.valueOf(e.getActionCommand());
 				((DefaultTableModel) table.getModel()).getValueAt(modelRow, 4);
@@ -899,20 +903,21 @@ public class Login extends javax.swing.JFrame {
 						.getValueAt(modelRow, 1);
 				String nomDemandado = (String) ((DefaultTableModel) table
 						.getModel()).getValueAt(modelRow, 2);
-				int idPdf = (Integer) ((DefaultTableModel) table.getModel())
-						.getValueAt(modelRow, 4);
+				String idPdf = String.valueOf(((DefaultTableModel) table.getModel())
+						.getValueAt(modelRow, 4));
 				String nomPdf = (String) ((DefaultTableModel) table.getModel())
 						.getValueAt(modelRow, 3);
+				String path=jerseyClient.getObtenerPath(idPdf);
 
-				agregarVisualizador(pdfViewerTab, nomProceso + "-" + paso + "-"
-						+ nomDemandado + "-" + idPdf + "-" + nomPdf);
-				dataGridTab.setSelectedIndex(1);
+//				agregarVisualizador(pdfViewerTab, nomProceso + "-" + paso + "-"
+//						+ nomDemandado + "-" + idPdf + "-" + nomPdf);
+//				dataGridTab.setSelectedIndex(1);
 			}
 		};
 		// ButtonColumn buttonColumnVisualizar = new ButtonColumn(jTable1,
 		// delete, 4);
 		ButtonColumn buttonColumnSeleccionar = new ButtonColumn(jTable1,
-				delete, 4);
+				delete, 6);
 		// buttonColumnVisualizar.setMnemonic(KeyEvent.VK_D);
 		buttonColumnSeleccionar.setMnemonic(KeyEvent.VK_D);
 		jTable1.getColumnModel().getColumn(5)
@@ -921,6 +926,11 @@ public class Login extends javax.swing.JFrame {
 		// primera columna
 		jTable1.getColumnModel().getColumn(5)
 				.setCellRenderer(new RenderCheckBox());
+		
+		//quitar columna con el codigo
+		jTable1.getColumnModel().getColumn(4).setMinWidth(0);
+		jTable1.getColumnModel().getColumn(4).setMaxWidth(0);
+		jTable1.getColumnModel().getColumn(4).setWidth(0);
 
 		return jTable1;
 	}

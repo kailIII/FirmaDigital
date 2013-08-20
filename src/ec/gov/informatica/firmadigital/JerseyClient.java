@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -27,6 +28,7 @@ public class JerseyClient {
 	private static final String URI ="http://pruebascoactivas.espaciolink.com/webservices/index.php/procesoslegales/";
 	private static final String RESUMEN ="resumenprocesolegal";
 	private static final String LISTA_PDF ="loadarchivos";
+	private static final String PATH_PDF ="obtenerArchivo";
 
 	public String getHash() throws IOException {
 		Date d = new Date();
@@ -94,7 +96,7 @@ public class JerseyClient {
 
 	}
 	
-	public List<ResumenRow> getResumenRows(){
+	public List<ResumenRow> getResumenRows(String ci){
 		try {
 
 			Client client = Client.create();
@@ -104,7 +106,7 @@ public class JerseyClient {
 
 			MultivaluedMap queryParams = new MultivaluedMapImpl();
 			queryParams.add("token", getToken());
-//			 queryParams.add("hash", getHash());
+			 queryParams.add("ci", ci);
 
 			ClientResponse response = webResource.queryParams(queryParams)
 					.accept("application/json").get(ClientResponse.class);
@@ -132,7 +134,48 @@ public class JerseyClient {
 
 		}
 	}
-	public List<PdfRow> getPdfRows(Integer idProceso){
+	public String getObtenerPath(String idPdf){
+		try {
+
+			Client client = Client.create();
+			client.addFilter(new LoggingFilter(System.out));
+			WebResource webResource = client
+					.resource(URI+PATH_PDF);
+
+			MultivaluedMap queryParams = new MultivaluedMapImpl();
+			queryParams.add("token", getToken());
+			 queryParams.add("idPdf", idPdf);
+
+			ClientResponse response = webResource.queryParams(queryParams)
+					.accept("application/json").get(ClientResponse.class);
+			if (response.getStatus() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ response.getStatus());
+			}
+
+			String output = response.getEntity(String.class);
+			Scanner sc = new Scanner(output);
+			String path="";
+			while (sc.hasNextLine()) {
+//			    Syarstem.out.println("[" + sc.nextLine() + "]");
+			    path=sc.nextLine();
+			}
+			
+			sc.close();
+			path = path.replace("\\", "");
+			path = path.replace("/home/coactiva/public_html/", "");
+			path = path.replace("\"", "");
+			System.out.println(path);
+			return path;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+
+		}
+	}
+	public List<PdfRow> getPdfRows(String ci,Integer idProceso){
 		try {
 
 			Client client = Client.create();
@@ -142,7 +185,8 @@ public class JerseyClient {
 
 			MultivaluedMap queryParams = new MultivaluedMapImpl();
 			queryParams.add("token", getToken());
-			 queryParams.add("proceso", idProceso.toString());
+			 queryParams.add("idProceso", idProceso.toString());
+			 queryParams.add("ci", ci);
 
 			ClientResponse response = webResource.queryParams(queryParams)
 					.accept("application/json").get(ClientResponse.class);
@@ -158,7 +202,7 @@ public class JerseyClient {
 		    List<PdfRow> pdfRows= new ArrayList<PdfRow>();
 		    for (int i=0; i<array.size();i++){
 		    	PdfRow pdfRow = gson.fromJson(array.get(i), PdfRow.class);
-		    	pdfRow.generarBytes();
+//		    	pdfRow.generarBytes();
 		    	pdfRows.add(pdfRow);
 		    }
 //			List<PdfRow> pdfRows = gson.fromJson(output, List.class);
