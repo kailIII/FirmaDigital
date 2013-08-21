@@ -13,7 +13,9 @@ public class PdfRow {
 	private String nombrePdf;
 	private String nombrePaso;
 	private String file;
-	private int idPdf;
+	private int idAdjunto;
+	private int idCola;
+	
 //	private transient byte[] pdfBytes;
 
 //	public void generarBytes() throws IOException {
@@ -77,6 +79,22 @@ public class PdfRow {
 		this.file = file;
 	}
 
+	public int getIdAdjunto() {
+		return idAdjunto;
+	}
+
+	public void setIdAdjunto(int idAdjunto) {
+		this.idAdjunto = idAdjunto;
+	}
+
+	public int getIdCola() {
+		return idCola;
+	}
+
+	public void setIdCola(int idCola) {
+		this.idCola = idCola;
+	}
+
 //	public byte[] getPdfBytes() {
 //		return pdfBytes;
 //	}
@@ -85,12 +103,5 @@ public class PdfRow {
 //		this.pdfBytes = pdfBytes;
 //	}
 
-	public int getIdPdf() {
-		return idPdf;
-	}
-
-	public void setIdPdf(int idPdf) {
-		this.idPdf = idPdf;
-	}
 
 }

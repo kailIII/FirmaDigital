@@ -377,8 +377,10 @@ public class FirmaDigital {
 	 * @param data
 	 * @return
 	 */
-	public byte[] firmar(byte[] data, String claveToken,
-			String tipoCertificado, String urlCertificado) {
+//	public void firmar(String claveToken,
+//			String tipoCertificado, String urlCertificado, String path) {
+		public void firmar(String claveToken,
+				String tipoCertificado, String path) {
 		try {
 			KeyStore keyStore = null;
 			Enumeration<String> enumeration = null;
@@ -394,6 +396,8 @@ public class FirmaDigital {
 							+ tipoCertificado);
 					keyStoreProvider = this
 							.getKeyStoreProvider(tipoCertificado);
+					System.out.println(claveToken
+							.toCharArray());
 					keyStore = keyStoreProvider.getKeystore(claveToken
 							.toCharArray());
 					enumeration = keyStore.aliases();
@@ -438,29 +442,28 @@ public class FirmaDigital {
 					.getSerialNumber().toString(), tipoCertificado);
 			if (!revocados.isEmpty()) {
 				System.out.println(" CERTIFICADO REVOCADO " + revocados);
-				return null;
+				return ;
 			}
 			System.out.println("- Certificado valido ");
 
-			PdfReader reader = new PdfReader(
-					"C:\\Users\\hp1\\Dropbox\\Profesional\\aprendizaje\\1932394850Java.pdf");
-			FileOutputStream fout = new FileOutputStream(
-					"C:\\Users\\hp1\\Dropbox\\Profesional\\aprendizaje\\1932394850JavaFirmado.pdf");
+			PdfReader reader = new PdfReader(path);
+			FileOutputStream fout = new FileOutputStream(path+
+					".Firmado.pdf");
 			PdfStamper stp = PdfStamper.createSignature(reader, fout, '?');
 			PdfSignatureAppearance sap = stp.getSignatureAppearance();
 			sap.setCrypto(key, chain, null,
 					PdfSignatureAppearance.WINCER_SIGNED);
-			sap.setReason("Firma PKCS12");
-			sap.setLocation("Imaginanet");
+			sap.setReason("Firma Procesos Legales");
+			sap.setLocation("RedTools");
 			// Añade la firma visible. Podemos comentarla para que no sea
 			// visible.
 			sap.setVisibleSignature(new Rectangle(100, 100, 200, 200), 1, null);
 			stp.close();
 
-			byte[] datosFirmados = cms.sign(data, privateKey, certs);
+//			byte[] datosFirmados = cms.sign(data, privateKey, certs);
 			System.out.println("Firmado Correctamente..!");
-			this.datosUsuarioActual = this
-					.crearDatosUsuario((X509Certificate) certs[0]); // llena la
+//			this.datosUsuarioActual = this
+//					.crearDatosUsuario((X509Certificate) certs[0]); // llena la
 																	// clase de
 																	// tipo
 																	// datosUsuario
@@ -468,7 +471,7 @@ public class FirmaDigital {
 																	// certificado
 																	// actual
 
-			return datosFirmados;
+//			return datosFirmados;
 		} catch (GeneralSecurityException e) {
 			throw new RuntimeException(e); // FIXME
 		} catch (IOException e) {

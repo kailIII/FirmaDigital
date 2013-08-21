@@ -14,6 +14,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -21,10 +23,8 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
@@ -33,6 +33,7 @@ import com.sun.pdfview.PDFPage;
 
 import ec.gov.informatica.firmadigital.DatosUsuario;
 import ec.gov.informatica.firmadigital.FirmaDigital;
+import ec.gov.informatica.firmadigital.IdentificacionPdf;
 import ec.gov.informatica.firmadigital.JerseyClient;
 import ec.gov.informatica.firmadigital.PdfRow;
 import ec.gov.informatica.firmadigital.ResumenRow;
@@ -73,6 +74,7 @@ public class Login extends javax.swing.JFrame {
 	FirmaDigital firmaDigital = new FirmaDigital();
 	DatosUsuario datosUsuario;
 	JerseyClient jerseyClient = new JerseyClient();
+	List<IdentificacionPdf> archivosAFirmar;
 
 	/**
 	 * Creates new form Login
@@ -156,9 +158,9 @@ public class Login extends javax.swing.JFrame {
 		 * datosInformativosLabel.setText("Datos Informativos");
 		 * nombreLabel.setText("Nombre:"); apellidoLabel.setText("Apellido");
 		 * cedulaLabel.setText("Cï¿½dula:");
-		 * institucionLabel.setText("Instituciï¿½n"); nombreTextField.setText("");
-		 * apellidoTextField.setText(""); cedulaTextField.setText("");
-		 * institucionTextField.setText("");
+		 * institucionLabel.setText("Instituciï¿½n");
+		 * nombreTextField.setText(""); apellidoTextField.setText("");
+		 * cedulaTextField.setText(""); institucionTextField.setText("");
 		 */
 
 		initializarLogin();
@@ -252,6 +254,38 @@ public class Login extends javax.swing.JFrame {
 
 	private void sincronizarButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		// TODO add your handling code here:
+		initializarLogueado();
+	}
+
+	private void firmarButtonActionPerformed(java.awt.event.ActionEvent evt) {
+		// TODO add your handling code here:
+		DefaultTableModel defaultTableModel = ((DefaultTableModel) jTable1
+				.getModel());
+		Integer totalRows = defaultTableModel.getRowCount();
+		archivosAFirmar = new ArrayList<>();
+		for (int i = 0; i < totalRows; i++) {
+			if ((Boolean) defaultTableModel.getValueAt(i, 6)) {
+				archivosAFirmar.add(new IdentificacionPdf(
+						((Integer) defaultTableModel.getValueAt(i, 4))
+								.toString(), ((Integer) defaultTableModel
+								.getValueAt(i, 5)).toString(),
+						(String) defaultTableModel.getValueAt(i, 3)));
+			}
+		}
+		System.out.println("------------------");
+		for (IdentificacionPdf identificacionPdf : archivosAFirmar) {
+			System.out.println(identificacionPdf.getIdCola() + "/"
+					+ identificacionPdf.getIdPdf());
+		}
+		try {
+			jerseyClient.firmarArchivos(archivosAFirmar, claveTextField.getText());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null,
+					"Hubo un error al obtener los datos");
+		}
+		// initializarLogueado();
 	}
 
 	public void initializarLogin() {
@@ -259,9 +293,7 @@ public class Login extends javax.swing.JFrame {
 		// inicia la imagen
 		BufferedImage myPicture = null;
 		try {
-			myPicture = ImageIO
-					.read(new File(
-							"dimensiones-firmadigital.jpg"));
+			myPicture = ImageIO.read(new File("dimensiones-firmadigital.jpg"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -402,41 +434,45 @@ public class Login extends javax.swing.JFrame {
 		pack();
 	}
 
-	public void llenarDatosDeUsuario(DatosUsuario datosUsuario){
-		
-		if(datosUsuario.getNombre()!=null && !datosUsuario.getNombre().isEmpty()){
+	public void llenarDatosDeUsuario(DatosUsuario datosUsuario) {
+
+		if (datosUsuario.getNombre() != null
+				&& !datosUsuario.getNombre().isEmpty()) {
 			nombreTextField.setText(datosUsuario.getNombre());
-		}else{
+		} else {
 			nombreTextField.setText("N/A");
 		}
-		if(datosUsuario.getApellido()!=null && !datosUsuario.getApellido().isEmpty()){
+		if (datosUsuario.getApellido() != null
+				&& !datosUsuario.getApellido().isEmpty()) {
 			apellidoTextField.setText(datosUsuario.getApellido());
-		}else{
+		} else {
 			apellidoTextField.setText("N/A");
 		}
-		if(datosUsuario.getCedula()!=null && !datosUsuario.getCedula().isEmpty()){
+		if (datosUsuario.getCedula() != null
+				&& !datosUsuario.getCedula().isEmpty()) {
 			cedulaTextField.setText(datosUsuario.getCedula());
-		}else{
+		} else {
 			cedulaTextField.setText("N/A");
 		}
-		if(datosUsuario.getInstitucion()!=null && !datosUsuario.getInstitucion().isEmpty()){
+		if (datosUsuario.getInstitucion() != null
+				&& !datosUsuario.getInstitucion().isEmpty()) {
 			institucionTextField.setText(datosUsuario.getInstitucion());
-		}else{
+		} else {
 			institucionTextField.setText("N/A");
 		}
-		
+
 	}
-	
+
 	public void initializarLogueado() {
 		// elimina todos los componentes anteriores del JPanel
-		
+
 		DatosUsuario datosUsuario = firmaDigital
-		.login(claveTextField.getText());
+				.login(claveTextField.getText());
 		if (datosUsuario == null) {
 			JOptionPane.showMessageDialog(null, "Datos incorrectos");
 			return;
 		}
-		
+
 		getContentPane().removeAll();
 		getContentPane().revalidate();
 		// inicializa datos del usario logueado
@@ -459,7 +495,7 @@ public class Login extends javax.swing.JFrame {
 		apellidoTextField.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
 		cedulaTextField.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
 		institucionTextField.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-		
+
 		llenarDatosDeUsuario(datosUsuario);
 
 		// agrega el bloque de datos informativos
@@ -538,8 +574,7 @@ public class Login extends javax.swing.JFrame {
 																												27,
 																												27)
 																										.addComponent(
-																												cedulaTextField)))
-																		))));
+																												cedulaTextField)))))));
 		jPanel1Layout
 				.setVerticalGroup(jPanel1Layout
 						.createParallelGroup(
@@ -575,8 +610,7 @@ public class Login extends javax.swing.JFrame {
 														.addComponent(
 																apellidoTextField)
 														.addComponent(
-																institucionTextField))
-										));
+																institucionTextField))));
 
 		headerPanel = new javax.swing.JPanel();
 		javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(
@@ -643,6 +677,11 @@ public class Login extends javax.swing.JFrame {
 
 		// botones
 		firmarButton.setText("Firmar");
+		firmarButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				firmarButtonActionPerformed(evt);
+			}
+		});
 
 		sincronizarButton.setText("Sincronizar");
 		sincronizarButton
@@ -652,7 +691,7 @@ public class Login extends javax.swing.JFrame {
 					}
 				});
 
-		//Genera el panel contenedor
+		// Genera el panel contenedor
 		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(
 				getContentPane());
 		getContentPane().setLayout(layout);
@@ -720,7 +759,8 @@ public class Login extends javax.swing.JFrame {
 		getContentPane().revalidate();
 		getContentPane().repaint();
 		try {
-			firmaDigital.verificar("C:\\Users\\hp1\\Dropbox\\Profesional\\aprendizaje\\1932394850JavaFirmado.pdf");
+			firmaDigital
+					.verificar("C:\\Users\\hp1\\Dropbox\\Profesional\\aprendizaje\\1932394850JavaFirmado.pdf");
 		} catch (SignatureVerificationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -734,11 +774,10 @@ public class Login extends javax.swing.JFrame {
 
 	private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		// TODO add your handling code here:
-//		DatosUsuario datosUsuario = firmaDigital
-//				.login(claveTextField.getText());
+		// DatosUsuario datosUsuario = firmaDigital
+		// .login(claveTextField.getText());
 		initializarLogueado();
-		
-		
+
 	}
 
 	/**
@@ -756,10 +795,9 @@ public class Login extends javax.swing.JFrame {
 		 * /tutorial/uiswing/lookandfeel/plaf.html
 		 */
 		try {
-			UIManager.setLookAndFeel(
-		            UIManager.getSystemLookAndFeelClassName());
-//			UIManager
-//					.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			// UIManager
+			// .setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 			// for (javax.swing.UIManager.LookAndFeelInfo info :
 			// javax.swing.UIManager.getInstalledLookAndFeels()) {
 			// if ("Nimbus".equals(info.getName())) {
@@ -806,16 +844,17 @@ public class Login extends javax.swing.JFrame {
 			tableData[i][3] = "Seleccionar Proceso";
 			i++;
 		}
-		String[] titulosTabla = new String[] { "Código del Proceso", "Nombre", "Cantidad",
-				"Seleccionar" };
+		String[] titulosTabla = new String[] { "Código del Proceso", "Nombre",
+				"Cantidad", "Seleccionar" };
 		jTable1.setModel(new javax.swing.table.DefaultTableModel(tableData,
 				titulosTabla));
 		Action delete = new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				 JTable table = (JTable)e.getSource();
+				JTable table = (JTable) e.getSource();
 				int modelRow = Integer.valueOf(e.getActionCommand());
-				e.setSource(obtenerTablaPdf((Integer)((DefaultTableModel)table.getModel()).getValueAt(modelRow, 0)));
-				
+				e.setSource(obtenerTablaPdf((Integer) ((DefaultTableModel) table
+						.getModel()).getValueAt(modelRow, 0)));
+
 				// ((DefaultTableModel)table.getModel()).removeRow(modelRow);
 			}
 		};
@@ -848,7 +887,7 @@ public class Login extends javax.swing.JFrame {
 			// FirmaDigital firmaDigital = new FirmaDigital();
 			// firmaDigital.verificar(pdfViewer.getDireccionPDF());
 			// pdfViewer.obtenerFirmas();
-//			JerseyClient webServiceLink = new JerseyClient();
+			// JerseyClient webServiceLink = new JerseyClient();
 			// System.out.println(webServiceLink.getToken());
 			// webServiceLink.getPdfRows();
 			jScrollPane.setViewportView(pdfViewer);
@@ -869,30 +908,32 @@ public class Login extends javax.swing.JFrame {
 	public JTable obtenerTablaPdf(Integer idProceso) {
 		JTable jTable = new JTable();
 		List<PdfRow> pdfRows = new ArrayList<>();
-		pdfRows = jerseyClient.getPdfRows("1718263153",idProceso);
-		Object[][] tableData = new Object[pdfRows.size()][7];
+		pdfRows = jerseyClient.getPdfRows("1718263153", idProceso);
+		Object[][] tableData = new Object[pdfRows.size()][8];
 		int i = 0;
 		for (PdfRow pdfRow : pdfRows) {
 
 			tableData[i][0] = pdfRow.getNombreProceso();
 			tableData[i][1] = pdfRow.getNombrePaso();
-			tableData[i][2] = pdfRow.getApellidosDemandado()+" "+pdfRow.getNombresDemandado();
+			tableData[i][2] = pdfRow.getApellidosDemandado() + " "
+					+ pdfRow.getNombresDemandado();
 			tableData[i][3] = pdfRow.getNombrePdf();
-			tableData[i][4] = pdfRow.getIdPdf();
-			tableData[i][5] = false;
-			tableData[i][6] = "Visualizar";
+			tableData[i][4] = pdfRow.getIdCola();
+			tableData[i][5] = pdfRow.getIdAdjunto();
+			tableData[i][6] = false;
+			tableData[i][7] = "Visualizar";
 			i++;
 		}
 		String[] titulosTabla = new String[] { "Proceso", "Paso", "Demandado",
-				"Nombre PDF", "", "Seleccionar para Firmar" ,"Visualizar"};
+				"Nombre PDF", "idCola", "idAdjunto", "Seleccionar para Firmar",
+				"Visualizar" };
 		jTable1.setModel(new javax.swing.table.DefaultTableModel(tableData,
 				titulosTabla));
 		Action delete = new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				
-				JerseyClient jerseyClient= new JerseyClient();
-				
-				
+
+				JerseyClient jerseyClient = new JerseyClient();
+
 				JTable table = (JTable) e.getSource();
 				int modelRow = Integer.valueOf(e.getActionCommand());
 				((DefaultTableModel) table.getModel()).getValueAt(modelRow, 4);
@@ -903,34 +944,48 @@ public class Login extends javax.swing.JFrame {
 						.getValueAt(modelRow, 1);
 				String nomDemandado = (String) ((DefaultTableModel) table
 						.getModel()).getValueAt(modelRow, 2);
-				String idPdf = String.valueOf(((DefaultTableModel) table.getModel())
-						.getValueAt(modelRow, 4));
+				String idAdjunto = String.valueOf(((DefaultTableModel) table
+						.getModel()).getValueAt(modelRow, 5));
+				String idCola = String.valueOf(((DefaultTableModel) table
+						.getModel()).getValueAt(modelRow, 4));
 				String nomPdf = (String) ((DefaultTableModel) table.getModel())
 						.getValueAt(modelRow, 3);
-				String path=jerseyClient.getObtenerPath(idPdf);
+				String path = jerseyClient.getObtenerPath(idCola, idAdjunto);
+				try {
+					jerseyClient.bajarArchivo(path, idCola + "-" + idAdjunto
+							+ "-" + nomPdf);
+					agregarVisualizador(pdfViewerTab, idCola + "-" + idAdjunto
+							+ "-" + nomPdf);
+					dataGridTab.setSelectedIndex(1);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null,
+							"Hubo un error al obtener los datos");
+				}
 
-//				agregarVisualizador(pdfViewerTab, nomProceso + "-" + paso + "-"
-//						+ nomDemandado + "-" + idPdf + "-" + nomPdf);
-//				dataGridTab.setSelectedIndex(1);
 			}
 		};
 		// ButtonColumn buttonColumnVisualizar = new ButtonColumn(jTable1,
 		// delete, 4);
 		ButtonColumn buttonColumnSeleccionar = new ButtonColumn(jTable1,
-				delete, 6);
+				delete, 7);
 		// buttonColumnVisualizar.setMnemonic(KeyEvent.VK_D);
 		buttonColumnSeleccionar.setMnemonic(KeyEvent.VK_D);
-		jTable1.getColumnModel().getColumn(5)
+		jTable1.getColumnModel().getColumn(6)
 				.setCellEditor(new CeldaCheckBox());
 		// para pintar la columna con el CheckBox en la tabla, en este caso, la
 		// primera columna
-		jTable1.getColumnModel().getColumn(5)
+		jTable1.getColumnModel().getColumn(6)
 				.setCellRenderer(new RenderCheckBox());
-		
-		//quitar columna con el codigo
+
+		// quitar columna con el codigo
 		jTable1.getColumnModel().getColumn(4).setMinWidth(0);
 		jTable1.getColumnModel().getColumn(4).setMaxWidth(0);
 		jTable1.getColumnModel().getColumn(4).setWidth(0);
+		jTable1.getColumnModel().getColumn(5).setMinWidth(0);
+		jTable1.getColumnModel().getColumn(5).setMaxWidth(0);
+		jTable1.getColumnModel().getColumn(5).setWidth(0);
 
 		return jTable1;
 	}
