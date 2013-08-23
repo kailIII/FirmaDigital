@@ -240,12 +240,12 @@ public class AppletFirmaDigital extends JApplet {
             String name = txtRutaArchivoFirmar.getText();
             File file = new File(name);
             byte[] data = getBytesFromFile(file);
-            byte[] firmado = firmaDigital.firmar(data, txtPassword.getText(), tipo_certificado, txtRutaArchivoCertificado.getText());
-            if (firmado.length>0) {
-                writeToFile(name + ".p7m", firmado);
-                mostrar_mensaje("F");
-                 System.out.println("== > El applet completo exitosamente la firma, se genero el archivo: " + name + ".p7m");
-            } 
+//            byte[] firmado = firmaDigital.firmar(data, txtPassword.getText(), tipo_certificado, txtRutaArchivoCertificado.getText());
+//            if (firmado.length>0) {
+//                writeToFile(name + ".p7m", firmado);
+//                mostrar_mensaje("F");
+//                 System.out.println("== > El applet completo exitosamente la firma, se genero el archivo: " + name + ".p7m");
+//            } 
         } catch (Exception e) {
                 mostrar_mensaje("E");
             e.printStackTrace();

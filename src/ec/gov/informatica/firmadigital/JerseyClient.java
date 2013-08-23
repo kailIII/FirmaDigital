@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -29,13 +28,13 @@ import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class JerseyClient {
-	
-	private static final String URI ="http://pruebascoactivas.espaciolink.com/";
-	private static final String RESUMEN ="webservices/index.php/procesoslegales/resumenprocesolegal";
-	private static final String LISTA_PDF ="webservices/index.php/procesoslegales/loadarchivos";
-	private static final String PATH_PDF ="webservices/index.php/procesoslegales/obtenerArchivo";
-	private static final String AUTHENTICATE ="webservices/index.php/procesoslegales/authenticate";
-	private static final String SUBIR_ARCHIVO ="webservices/index.php/procesoslegales/subirArchivo";
+
+	private static final String URI = "http://pruebascoactivas.espaciolink.com/";
+	private static final String RESUMEN = "webservices/index.php/procesoslegales/resumenprocesolegal";
+	private static final String LISTA_PDF = "webservices/index.php/procesoslegales/loadarchivos";
+	private static final String PATH_PDF = "webservices/index.php/procesoslegales/obtenerArchivo";
+	private static final String AUTHENTICATE = "webservices/index.php/procesoslegales/authenticate";
+	private static final String SUBIR_ARCHIVO = "webservices/index.php/procesoslegales/subirArchivo";
 	private FirmaDigital firmaDigital = new FirmaDigital();
 
 	public String getHash() throws IOException {
@@ -65,16 +64,13 @@ public class JerseyClient {
 		System.out.println(content);
 		return content;
 	}
-	
-	
 
 	public String getToken() {
 		try {
 
 			Client client = Client.create();
 
-			WebResource webResource = client
-					.resource(URI+AUTHENTICATE);
+			WebResource webResource = client.resource(URI + AUTHENTICATE);
 
 			MultivaluedMap queryParams = new MultivaluedMapImpl();
 			queryParams.add("pk", getPublicKey());
@@ -103,20 +99,75 @@ public class JerseyClient {
 		}
 
 	}
-	
-	public List<ResumenRow> subirArchivo(String id){
+
+	public String subirArchivo(String id, String nombrePdf, String path) {
 		try {
 
 			Client client = Client.create();
 			client.addFilter(new LoggingFilter(System.out));
-			WebResource webResource = client
-					.resource(URI+SUBIR_ARCHIVO);
+			WebResource webResource = client.resource(URI + SUBIR_ARCHIVO);
+
+			// String
+			// fileBase64String=FileUtils.encodeFileToBase64Binary(path).replace("/",
+			// "\//");
+
+			String input = "{\"token\":\"" + getToken() + "\",\"id\":\"" + id
+					+ "\",\"nombrePdf\":\"" + nombrePdf + "\"," + "\"file\":\""
+					+ FileUtils.encodeFileToBase64Binary(path) + "\"}";
+
+			ClientResponse response = webResource.type("application/json")
+					.post(ClientResponse.class, input);
+
+			if (response.getStatus() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ response.getStatus());
+			}
+
+			System.out.println("Output from Server .... \n");
+			String output = response.getEntity(String.class);
+			System.out.println(output);
+
+			// Gson gson = new Gson();
+			// System.out.println(gson.toJson(FileUtils.encodeFileToBase64Binary(path)));
+			//
+			// ClientResponse response = webResource.queryParams(queryParams)
+			// .accept("application/json").get(ClientResponse.class);
+			// if (response.getStatus() != 200) {
+			// throw new RuntimeException("Failed : HTTP error code : "
+			// + response.getStatus());
+			// }
+			//
+			// String output = response.getEntity(String.class);
+			// Gson gson = new Gson();
+			// JsonParser parser = new JsonParser();
+			// JsonArray array = parser.parse(output).getAsJsonArray();
+			// List<ResumenRow> resumenRows= new ArrayList<ResumenRow>();
+			// for (int i=0; i<array.size();i++){
+			// ResumenRow resumenRow = gson.fromJson(array.get(i),
+			// ResumenRow.class);
+			// resumenRows.add(resumenRow);
+			// }
+			// List<PdfRow> pdfRows = gson.fromJson(output, List.class);
+			return null;
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+
+		}
+	}
+
+	public List<ResumenRow> getResumenRows(String ci) {
+		try {
+
+			Client client = Client.create();
+			client.addFilter(new LoggingFilter(System.out));
+			WebResource webResource = client.resource(URI + RESUMEN);
 
 			MultivaluedMap queryParams = new MultivaluedMapImpl();
 			queryParams.add("token", getToken());
-			 queryParams.add("id", id);
-			 
-			 String input = "{\"token\":\""+getToken()+"\",\"id\":\"Fade To Black\"}";
+			queryParams.add("ci", ci);
 
 			ClientResponse response = webResource.queryParams(queryParams)
 					.accept("application/json").get(ClientResponse.class);
@@ -128,53 +179,14 @@ public class JerseyClient {
 			String output = response.getEntity(String.class);
 			Gson gson = new Gson();
 			JsonParser parser = new JsonParser();
-		    JsonArray array = parser.parse(output).getAsJsonArray();
-		    List<ResumenRow> resumenRows= new ArrayList<ResumenRow>();
-		    for (int i=0; i<array.size();i++){
-		    	ResumenRow resumenRow = gson.fromJson(array.get(i), ResumenRow.class);
-		    	resumenRows.add(resumenRow);
-		    }
-//			List<PdfRow> pdfRows = gson.fromJson(output, List.class);
-			return resumenRows;
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			return null;
-
-		}
-	}
-	
-	
-	public List<ResumenRow> getResumenRows(String ci){
-		try {
-
-			Client client = Client.create();
-			client.addFilter(new LoggingFilter(System.out));
-			WebResource webResource = client
-					.resource(URI+RESUMEN);
-
-			MultivaluedMap queryParams = new MultivaluedMapImpl();
-			queryParams.add("token", getToken());
-			 queryParams.add("ci", ci);
-
-			ClientResponse response = webResource.queryParams(queryParams)
-					.accept("application/json").get(ClientResponse.class);
-			if (response.getStatus() != 200) {
-				throw new RuntimeException("Failed : HTTP error code : "
-						+ response.getStatus());
+			JsonArray array = parser.parse(output).getAsJsonArray();
+			List<ResumenRow> resumenRows = new ArrayList<ResumenRow>();
+			for (int i = 0; i < array.size(); i++) {
+				ResumenRow resumenRow = gson.fromJson(array.get(i),
+						ResumenRow.class);
+				resumenRows.add(resumenRow);
 			}
-
-			String output = response.getEntity(String.class);
-			Gson gson = new Gson();
-			JsonParser parser = new JsonParser();
-		    JsonArray array = parser.parse(output).getAsJsonArray();
-		    List<ResumenRow> resumenRows= new ArrayList<ResumenRow>();
-		    for (int i=0; i<array.size();i++){
-		    	ResumenRow resumenRow = gson.fromJson(array.get(i), ResumenRow.class);
-		    	resumenRows.add(resumenRow);
-		    }
-//			List<PdfRow> pdfRows = gson.fromJson(output, List.class);
+			// List<PdfRow> pdfRows = gson.fromJson(output, List.class);
 			return resumenRows;
 
 		} catch (Exception e) {
@@ -184,43 +196,52 @@ public class JerseyClient {
 
 		}
 	}
-	
-	public void firmarArchivos(List<IdentificacionPdf> archivosAFirmar, String claveToken) throws IOException{
-		
-		for (IdentificacionPdf identificacionPdf:archivosAFirmar) {
-			String path=getObtenerPath(identificacionPdf.getIdCola(), identificacionPdf.getIdPdf());
-			bajarArchivo(path,
-					identificacionPdf.getIdCola() + "-" + identificacionPdf.getIdPdf()
-					+ "-" + identificacionPdf.getNombrePdf());
-			firmaDigital.firmar(claveToken, "2", identificacionPdf.getIdCola() + "-" + identificacionPdf.getIdPdf()
-					+ "-" + identificacionPdf.getNombrePdf());
-			
-			
+
+	public void firmarArchivos(List<IdentificacionPdf> archivosAFirmar,
+			String claveToken) throws IOException {
+
+		for (IdentificacionPdf identificacionPdf : archivosAFirmar) {
+			String path = getObtenerPath(identificacionPdf.getIdCola(),
+					identificacionPdf.getIdPdf());
+			bajarArchivo(
+					path,
+					identificacionPdf.getIdCola() + "-"
+							+ identificacionPdf.getIdPdf() + "-"
+							+ identificacionPdf.getNombrePdf());
+			firmaDigital.firmar(claveToken, "2", identificacionPdf.getIdCola()
+					+ "-" + identificacionPdf.getIdPdf() + "-"
+					+ identificacionPdf.getNombrePdf());
+			subirArchivo(
+					identificacionPdf.getIdCola(),
+					identificacionPdf.getNombrePdf(),
+					identificacionPdf.getIdCola() + "-"
+							+ identificacionPdf.getIdPdf() + "-"
+							+ identificacionPdf.getNombrePdf()+".Firmado.pdf");
+
 		}
 	}
-	
-	public void bajarArchivo(String path, String fileName) throws IOException{
-		
-		URL website = new URL(URI+path);
-	    ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-	    FileOutputStream fos = new FileOutputStream(fileName);
-	    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-	    fos.close();
-		
-		
+
+	public void bajarArchivo(String path, String fileName) throws IOException {
+
+		URL website = new URL(URI + path);
+		ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+		FileOutputStream fos = new FileOutputStream(fileName);
+		fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+		fos.close();
+
 	}
-	public String getObtenerPath(String idCola, String idAdjunto){
+
+	public String getObtenerPath(String idCola, String idAdjunto) {
 		try {
 
 			Client client = Client.create();
 			client.addFilter(new LoggingFilter(System.out));
-			WebResource webResource = client
-					.resource(URI+PATH_PDF);
+			WebResource webResource = client.resource(URI + PATH_PDF);
 
 			MultivaluedMap queryParams = new MultivaluedMapImpl();
 			queryParams.add("token", getToken());
-			 queryParams.add("id", idCola);
-			 queryParams.add("idPdf", idAdjunto);
+			queryParams.add("id", idCola);
+			queryParams.add("idPdf", idAdjunto);
 
 			ClientResponse response = webResource.queryParams(queryParams)
 					.accept("application/json").get(ClientResponse.class);
@@ -231,12 +252,12 @@ public class JerseyClient {
 
 			String output = response.getEntity(String.class);
 			Scanner sc = new Scanner(output);
-			String path="";
+			String path = "";
 			while (sc.hasNextLine()) {
-//			    Syarstem.out.println("[" + sc.nextLine() + "]");
-			    path=sc.nextLine();
+				// Syarstem.out.println("[" + sc.nextLine() + "]");
+				path = sc.nextLine();
 			}
-			
+
 			sc.close();
 			path = path.replace("\\", "");
 			path = path.replace("/home/coactiva/public_html/", "");
@@ -251,18 +272,18 @@ public class JerseyClient {
 
 		}
 	}
-	public List<PdfRow> getPdfRows(String ci,Integer idProceso){
+
+	public List<PdfRow> getPdfRows(String ci, Integer idProceso) {
 		try {
 
 			Client client = Client.create();
 			client.addFilter(new LoggingFilter(System.out));
-			WebResource webResource = client
-					.resource(URI+LISTA_PDF);
+			WebResource webResource = client.resource(URI + LISTA_PDF);
 
 			MultivaluedMap queryParams = new MultivaluedMapImpl();
 			queryParams.add("token", getToken());
-			 queryParams.add("idProceso", idProceso.toString());
-			 queryParams.add("ci", ci);
+			queryParams.add("idProceso", idProceso.toString());
+			queryParams.add("ci", ci);
 
 			ClientResponse response = webResource.queryParams(queryParams)
 					.accept("application/json").get(ClientResponse.class);
@@ -274,14 +295,14 @@ public class JerseyClient {
 			String output = response.getEntity(String.class);
 			Gson gson = new Gson();
 			JsonParser parser = new JsonParser();
-		    JsonArray array = parser.parse(output).getAsJsonArray();
-		    List<PdfRow> pdfRows= new ArrayList<PdfRow>();
-		    for (int i=0; i<array.size();i++){
-		    	PdfRow pdfRow = gson.fromJson(array.get(i), PdfRow.class);
-//		    	pdfRow.generarBytes();
-		    	pdfRows.add(pdfRow);
-		    }
-//			List<PdfRow> pdfRows = gson.fromJson(output, List.class);
+			JsonArray array = parser.parse(output).getAsJsonArray();
+			List<PdfRow> pdfRows = new ArrayList<PdfRow>();
+			for (int i = 0; i < array.size(); i++) {
+				PdfRow pdfRow = gson.fromJson(array.get(i), PdfRow.class);
+				// pdfRow.generarBytes();
+				pdfRows.add(pdfRow);
+			}
+			// List<PdfRow> pdfRows = gson.fromJson(output, List.class);
 			return pdfRows;
 
 		} catch (Exception e) {
