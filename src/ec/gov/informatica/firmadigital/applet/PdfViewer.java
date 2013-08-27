@@ -107,7 +107,7 @@ public class PdfViewer extends JPanel {
 		javax.swing.GroupLayout firmantesPanelLayout = new javax.swing.GroupLayout(
 				firmantesPanel);
 		FirmaDigital firmaDigital = new FirmaDigital();
-		String firmantes = "<html><ul><li>pruebaaa de esto es es unas dasq</li>";
+		String firmantes = "<html><ul>";
 		try {
 			for (String firmante : firmaDigital.verificar(path)) {
 				firmantes += "<li>" + firmante+"</li>";
